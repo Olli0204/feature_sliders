@@ -8,7 +8,7 @@
     <MinShopVersion>5.7.0</MinShopVersion>
     <MaxShopVersion>5.8.0</MaxShopVersion>
     <PluginID>feature_sliders</PluginID>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <CreateDate>2026-09-24</CreateDate>
     <Install>
         <Adminmenu>
@@ -56,9 +56,9 @@
                     <ValueName>mrf_title</ValueName>
                 </Setting>
                 <Setting type="checkbox" initialValue="on" sort="7" conf="Y">
-                    <Name>Standard-Merkmalfilter ausblenden</Name>
-                    <Description>Blendet den normalen Checkbox-Filter dieses Merkmals aus, damit nur der Schieberegler erscheint.</Description>
-                    <ValueName>mrf_hide_default</ValueName>
+                    <Name>Regler immer aufgeklappt</Name>
+                    <Description>Zeigt den Regler im Merkmalfilter immer geöffnet an (wie den Preisfilter). Abgewählt verhält er sich wie die übrigen Merkmale.</Description>
+                    <ValueName>mrf_expanded</ValueName>
                 </Setting>
                 <Setting type="text" initialValue="mrf" sort="8" conf="Y">
                     <Name>URL-Parameter</Name>
@@ -69,7 +69,7 @@
         </Adminmenu>
         <Boxes>
             <Box>
-                <Name>Merkmal-Bereichsfilter (Schieberegler)</Name>
+                <Name>Merkmal-Bereichsfilter (veraltet, kann gelöscht werden)</Name>
                 <Available>2</Available>
                 <TemplateFile>range_filter.tpl</TemplateFile>
             </Box>

@@ -45,7 +45,9 @@ class RangeFilter extends AbstractFilter
         $this->setIsCustom(true)
             ->setType(Type::AND)
             ->setUrlParam($this->settings?->urlParam ?? 'mrf')
-            ->setVisibility($this->settings?->isUsable() ? Visibility::SHOW_ALWAYS : Visibility::SHOW_NEVER)
+            // never rendered as a filter of its own: the slider replaces the values of the
+            // characteristic inside the core characteristic filter (see Bootstrap::prepareListing())
+            ->setVisibility(Visibility::SHOW_NEVER)
             ->setFrontendName($this->getTitle())
             ->setFilterName($this->getFrontendName());
     }
@@ -179,6 +181,7 @@ class RangeFilter extends AbstractFilter
         return [
             'className' => $this->getClassName(),
             'id'        => 'mrf-' . $this->settings->characteristicID,
+            'characteristicID' => $this->settings->characteristicID,
             'param'     => $this->getUrlParam(),
             'title'     => $this->getFrontendName(),
             'unit'      => $this->settings->unit,

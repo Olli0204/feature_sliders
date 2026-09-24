@@ -1,15 +1,10 @@
-{* Filter-Modal (mobil bzw. Filterplatzierung "modal"): Schieberegler statt der generischen Optionsliste. *}
-{block name='snippets-filter-mobile-filters-generic'}
-    {if isset($mrfSlider) && $filter->getClassName() === $mrfSlider.className}
-        {link class="snippets-filter-mobile-mrf-toggle"
-            data=["toggle"=> "collapse", "target"=>"#filter-collapse-{$mrfSlider.id}"]
-            aria=["expanded"=>"true"]
-            rel="nofollow"}
-            <span class="text-truncate">{$mrfSlider.title}</span>
-        {/link}
-        {collapse id="filter-collapse-{$mrfSlider.id}"
+{* Filter-Dialog (mobil bzw. Filterplatzierung "modal"): unter dem Merkmal des Plugins steht der Schieberegler
+   statt der Checkbox-Werte. Der Aufklapp-Link (Block ...-button) bleibt NOVA-Original. *}
+{block name='snippets-filter-mobile-filters-collapse'}
+    {if isset($mrfSlider) && (int)$subFilter->getValue() === $mrfSlider.characteristicID}
+        {collapse id="filter-collapse-{$subFilter->getFrontendName()|seofy}"
             class="snippets-filter-mobile-item-collapse"
-            visible=true}
+            visible=$visible}
             {include file=$mrfSlider.tpl}
         {/collapse}
     {else}

@@ -36,9 +36,9 @@ class Bootstrap extends Bootstrapper
     }
 
     /**
-     * Runs after the search results are built and before the boxes are rendered:
-     * hands the slider data to Smarty and removes the core checkbox filter of the
-     * same characteristic.
+     * Runs after the search results are built and before the boxes are rendered: hands the
+     * slider data to Smarty and makes sure the characteristic shows up in the core
+     * characteristic filter, where the plugin templates swap its values for the slider.
      */
     private function prepareListing(Settings $settings): void
     {
@@ -48,26 +48,69 @@ class Bootstrap extends Bootstrapper
             return;
         }
         $slider = $filter->getSliderData();
-        if ($slider !== null) {
-            $l10n             = $this->getPlugin()->getLocalization();
-            $slider['labels'] = [
-                'from'  => $l10n->getTranslation('mrf_from') ?? 'Von',
-                'to'    => $l10n->getTranslation('mrf_to') ?? 'Bis',
-                'reset' => $l10n->getTranslation('mrf_reset') ?? 'Zurücksetzen',
-            ];
-            Shop::Smarty()->assign('mrfSlider', $slider);
-        }
-        if (!$settings->hideDefaultFilter) {
+        if ($slider === null) {
             return;
         }
+        $l10n             = $this->getPlugin()->getLocalization();
+        $slider['labels'] = [
+            'from'  => $l10n->getTranslation('mrf_from') ?? 'Von',
+            'to'    => $l10n->getTranslation('mrf_to') ?? 'Bis',
+            'reset' => $l10n->getTranslation('mrf_reset') ?? 'Zurücksetzen',
+        ];
+        Shop::Smarty()->assign('mrfSlider', $slider);
+        $this->placeInCharacteristicFilter($productFilter, $settings, $filter);
+    }
+
+    /**
+     * The core lists a characteristic only when products of the current result carry one of its
+     * values (e.g. not with 0 hits after narrowing the slider). In that case a placeholder option
+     * is added so the slider stays reachable. The option is flagged active when the slider should
+     * be expanded or the filter is set.
+     */
+    private function placeInCharacteristicFilter(
+        ProductFilter $productFilter,
+        Settings $settings,
+        RangeFilter $filter
+    ): void {
         $results    = $productFilter->getSearchResults();
         $collection = $productFilter->getCharacteristicFilterCollection();
-        $keep       = static fn($option): bool => !($option instanceof CharacteristicOption)
-            || (int)$option->getValue() !== $settings->characteristicID;
-        $results->setCharacteristicFilterOptions(
-            \array_values(\array_filter($results->getCharacteristicFilterOptions(), $keep))
-        );
-        $collection->setOptions(\array_values(\array_filter($collection->getOptions(), $keep)));
+        $options    = $results->getCharacteristicFilterOptions();
+        $option     = null;
+        foreach ($options as $candidate) {
+            if ((int)$candidate->getValue() === $settings->characteristicID) {
+                $option = $candidate;
+                break;
+            }
+        }
+        if ($option === null) {
+            $useFilter = (string)($productFilter->getFilterConfig()->getConfig('navigationsfilter')
+                ['merkmalfilter_verwenden'] ?? 'N');
+            if ($useFilter === 'N') {
+                return;
+            }
+            $option = new CharacteristicOption();
+            $option->setID($settings->characteristicID);
+            $option->setValue($settings->characteristicID);
+            $option->setName($filter->getFrontendName());
+            $option->setFrontendName($filter->getFrontendName());
+            $option->setParam($collection->getUrlParam());
+            $option->setClassName($collection->getClassName());
+            $option->setType($collection->getType());
+            $option->setData('kMerkmal', $settings->characteristicID)
+                ->setData('cTyp', 'TEXT')
+                ->setData('isMultiSelect', false);
+            $option->setCount(1);
+            $options[] = $option;
+            $results->setCharacteristicFilterOptions($options);
+            $collection->setOptions($options);
+            $collection->setFilterCollection($options);
+            if ($collection->isHidden()) {
+                $collection->setVisibility($useFilter);
+            }
+        }
+        if ($settings->expanded || $filter->isInitialized()) {
+            $option->setIsActive(true);
+        }
     }
 
     /**
