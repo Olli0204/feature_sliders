@@ -1,10 +1,4 @@
-/* Regler-Optik kommt vollständig aus NOVA (.price-range-inputs, .price-range-slide, .noUi-*).
-   Hier nur, was der Preisfilter nicht kennt. */
-.mrf-slider .mrf-reset {
-    display: inline-block;
-    margin-top: 1rem;
-    font-size: 0.875rem;
-}
+/* Regler-Optik kommt vollständig aus NOVA (.price-range-inputs, .price-range-slide, .noUi-*). */
 
 /* Abstand unter dem Regler wie beim NOVA-Preisfilter (.box-filter-price .box-filter-price-collapse) */
 .mrf-box-content {
