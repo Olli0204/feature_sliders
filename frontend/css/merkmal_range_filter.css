@@ -1,0 +1,31 @@
+/* Merkmal-Bereichsfilter – Regler-Optik (Griffe, Farben) kommt aus NOVAs .noUi-* Theme-Regeln */
+.mrf-slider {
+    padding: 0.25rem 0 0.75rem;
+}
+
+.mrf-inputs {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.mrf-inputs .mrf-input-group {
+    flex: 0 1 46%;
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+
+.mrf-inputs .mrf-input {
+    min-width: 0;
+}
+
+.mrf-slider .mrf-track {
+    margin: 0 0.5rem 0.75rem;
+}
+
+.mrf-slider .mrf-reset {
+    display: inline-block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+}

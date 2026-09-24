@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jtlshopplugin>
+    <Name>Merkmal-Bereichsfilter</Name>
+    <Description>Schieberegler-Filter für Merkmale, die in der Wawi als Bereich gepflegt sind (z. B. Körpergewicht „35 - 55 kg“). Angezeigt werden alle Artikel, deren Bereich sich mit der Auswahl überschneidet.</Description>
+    <Author>Oliver Kamps</Author>
+    <URL>https://ollipolli.de</URL>
+    <XMLVersion>102</XMLVersion>
+    <MinShopVersion>5.7.0</MinShopVersion>
+    <MaxShopVersion>5.8.0</MaxShopVersion>
+    <PluginID>merkmal_range_filter</PluginID>
+    <Version>1.0.0</Version>
+    <CreateDate>2026-09-24</CreateDate>
+    <Install>
+        <Adminmenu>
+            <Customlink sort="1">
+                <Name>Werteübersicht</Name>
+            </Customlink>
+            <Settingslink sort="2">
+                <Name>Einstellungen</Name>
+                <Setting type="checkbox" initialValue="on" sort="1" conf="Y">
+                    <Name>Filter aktiv</Name>
+                    <Description>Schaltet den Schieberegler-Filter im Shop ein.</Description>
+                    <ValueName>mrf_active</ValueName>
+                </Setting>
+                <Setting type="selectbox" initialValue="0" sort="2" conf="Y">
+                    <Name>Merkmal</Name>
+                    <Description>Merkmal, dessen Werte als Bereich gepflegt sind (z. B. Körpergewicht mit Werten wie „35 - 55 kg“).</Description>
+                    <ValueName>mrf_characteristic</ValueName>
+                    <OptionsSource>
+                        <File>options/characteristics.php</File>
+                    </OptionsSource>
+                </Setting>
+                <Setting type="selectbox" initialValue="overlap" sort="3" conf="Y">
+                    <Name>Treffer-Logik</Name>
+                    <Description>Wann ein Artikel zur eingestellten Auswahl passt.</Description>
+                    <ValueName>mrf_mode</ValueName>
+                    <SelectboxOptions>
+                        <Option value="overlap" sort="1">Bereiche überschneiden sich (Standard)</Option>
+                        <Option value="contains" sort="2">Artikel-Bereich enthält die Auswahl vollständig</Option>
+                        <Option value="within" sort="3">Artikel-Bereich liegt vollständig in der Auswahl</Option>
+                    </SelectboxOptions>
+                </Setting>
+                <Setting type="text" initialValue="kg" sort="4" conf="Y">
+                    <Name>Einheit</Name>
+                    <Description>Einheit neben den Eingabefeldern, z. B. „kg“.</Description>
+                    <ValueName>mrf_unit</ValueName>
+                </Setting>
+                <Setting type="text" initialValue="1" sort="5" conf="Y">
+                    <Name>Schrittweite</Name>
+                    <Description>Schrittweite des Reglers, z. B. 1 oder 0.5.</Description>
+                    <ValueName>mrf_step</ValueName>
+                </Setting>
+                <Setting type="text" initialValue="" sort="6" conf="Y">
+                    <Name>Überschrift</Name>
+                    <Description>Optional. Leer lassen, um den Merkmalnamen der jeweiligen Sprache zu verwenden.</Description>
+                    <ValueName>mrf_title</ValueName>
+                </Setting>
+                <Setting type="checkbox" initialValue="on" sort="7" conf="Y">
+                    <Name>Standard-Merkmalfilter ausblenden</Name>
+                    <Description>Blendet den normalen Checkbox-Filter dieses Merkmals aus, damit nur der Schieberegler erscheint.</Description>
+                    <ValueName>mrf_hide_default</ValueName>
+                </Setting>
+                <Setting type="text" initialValue="mrf" sort="8" conf="Y">
+                    <Name>URL-Parameter</Name>
+                    <Description>Name des Parameters in der Filter-URL (Kleinbuchstaben, Ziffern, Unterstrich).</Description>
+                    <ValueName>mrf_url_param</ValueName>
+                </Setting>
+            </Settingslink>
+        </Adminmenu>
+        <Boxes>
+            <Box>
+                <Name>Merkmal-Bereichsfilter (Schieberegler)</Name>
+                <Available>2</Available>
+                <TemplateFile>range_filter.tpl</TemplateFile>
+            </Box>
+        </Boxes>
+        <CSS>
+            <file>
+                <name>merkmal_range_filter.css</name>
+                <priority>5</priority>
+            </file>
+        </CSS>
+        <JS>
+            <file>
+                <name>merkmal_range_filter.js</name>
+                <priority>5</priority>
+                <position>body</position>
+            </file>
+        </JS>
+        <Locales>
+            <Variable>
+                <Name>mrf_from</Name>
+                <Description>Beschriftung des linken Eingabefelds</Description>
+                <VariableLocalized iso="GER">Von</VariableLocalized>
+                <VariableLocalized iso="ENG">From</VariableLocalized>
+            </Variable>
+            <Variable>
+                <Name>mrf_to</Name>
+                <Description>Beschriftung des rechten Eingabefelds</Description>
+                <VariableLocalized iso="GER">Bis</VariableLocalized>
+                <VariableLocalized iso="ENG">To</VariableLocalized>
+            </Variable>
+            <Variable>
+                <Name>mrf_reset</Name>
+                <Description>Link zum Zurücksetzen des Filters</Description>
+                <VariableLocalized iso="GER">Zurücksetzen</VariableLocalized>
+                <VariableLocalized iso="ENG">Reset</VariableLocalized>
+            </Variable>
+        </Locales>
+    </Install>
+</jtlshopplugin>
