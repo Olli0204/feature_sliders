@@ -6,9 +6,9 @@
     <URL>https://ollipolli.de</URL>
     <XMLVersion>102</XMLVersion>
     <MinShopVersion>5.7.0</MinShopVersion>
-    <MaxShopVersion>5.8.0</MaxShopVersion>
+    <MaxShopVersion>5.8.1</MaxShopVersion>
     <PluginID>feature_sliders</PluginID>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <CreateDate>2026-09-24</CreateDate>
     <Install>
         <Adminmenu>
