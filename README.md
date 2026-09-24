@@ -35,10 +35,10 @@ Werte ohne Zahl werden ignoriert; der Admin-Tab **Werteübersicht** listet alle 
 
 ## Einrichtung
 
-Der Plugin-Ordner im Shop muss `plugins/feature_sliders` heißen (= PluginID, Namespace `Plugin\feature_sliders`):
+Der Plugin-Ordner im Shop muss `plugins/feature_sliders` heißen – der Repo-Name stimmt überein, ein einfacher Clone reicht (= PluginID, Namespace `Plugin\feature_sliders`):
 
 ```bash
-git clone git@github.com:Olli0204/weight-slider.git feature_sliders
+git clone git@github.com:Olli0204/feature_sliders.git
 ```
 
 
