@@ -38,9 +38,4 @@
         </div>
     </div>
     <div class="price-range-slide js-mrf-track"></div>
-    {if $mrfSlider.active}
-        <a class="mrf-reset js-mrf-reset" href="{$mrfSlider.baseUrl|escape:'html'}" rel="nofollow">
-            <span class="fa fa-times"></span> {$mrfSlider.labels.reset|escape:'html'}
-        </a>
-    {/if}
 </div>

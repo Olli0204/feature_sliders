@@ -20,7 +20,8 @@ Bereich sich mit der Auswahl **überschneidet** (die Auswahl muss nicht vollstä
   der Wawi) bleiben NOVA-Original. Fehlt das Merkmal in der Liste (z. B. 0 Treffer nach dem Eingrenzen), setzt das
   Plugin einen Platzhalter ein, damit der Regler erreichbar bleibt.
 - Optik: exakt das Markup des NOVA-Preisfilters (`price-range-inputs`, `col-5`, `input-group-prepend`,
-  `price-range-slide`), daher greifen die Theme-Regeln 1:1 – eigenes CSS nur für den Zurücksetzen-Link.
+  `price-range-slide`), daher greifen die Theme-Regeln 1:1. Zurückgesetzt wird wie beim Preisfilter über die
+  aktiven Filter („Körpergewicht: … ×“) oder indem man den Regler wieder ganz aufzieht.
 
 ### Erkannte Schreibweisen
 

@@ -8,7 +8,7 @@
     <MinShopVersion>5.7.0</MinShopVersion>
     <MaxShopVersion>5.8.0</MaxShopVersion>
     <PluginID>feature_sliders</PluginID>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <CreateDate>2026-09-24</CreateDate>
     <Install>
         <Adminmenu>
@@ -99,12 +99,6 @@
                 <Description>Beschriftung des rechten Eingabefelds</Description>
                 <VariableLocalized iso="GER">Bis</VariableLocalized>
                 <VariableLocalized iso="ENG">To</VariableLocalized>
-            </Variable>
-            <Variable>
-                <Name>mrf_reset</Name>
-                <Description>Link zum Zurücksetzen des Filters</Description>
-                <VariableLocalized iso="GER">Zurücksetzen</VariableLocalized>
-                <VariableLocalized iso="ENG">Reset</VariableLocalized>
             </Variable>
         </Locales>
     </Install>

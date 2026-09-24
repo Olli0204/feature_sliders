@@ -116,14 +116,6 @@
                 }
             });
         });
-
-        var reset = root.querySelector('.js-mrf-reset');
-        if (reset) {
-            reset.addEventListener('click', function (e) {
-                e.preventDefault();
-                navigate(root, reset.getAttribute('href'));
-            });
-        }
     }
 
     function initAll() {

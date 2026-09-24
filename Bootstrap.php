@@ -53,9 +53,8 @@ class Bootstrap extends Bootstrapper
         }
         $l10n             = $this->getPlugin()->getLocalization();
         $slider['labels'] = [
-            'from'  => $l10n->getTranslation('mrf_from') ?? 'Von',
-            'to'    => $l10n->getTranslation('mrf_to') ?? 'Bis',
-            'reset' => $l10n->getTranslation('mrf_reset') ?? 'Zurücksetzen',
+            'from' => $l10n->getTranslation('mrf_from') ?? 'Von',
+            'to'   => $l10n->getTranslation('mrf_to') ?? 'Bis',
         ];
         Shop::Smarty()->assign('mrfSlider', $slider);
         $this->placeInCharacteristicFilter($productFilter, $settings, $filter);
