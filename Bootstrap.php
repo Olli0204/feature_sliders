@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Plugin\merkmal_range_filter;
+namespace Plugin\feature_sliders;
 
 use JTL\Events\Dispatcher;
 use JTL\Filter\CharacteristicOption;
@@ -10,9 +10,9 @@ use JTL\Filter\ProductFilter;
 use JTL\Plugin\Bootstrapper;
 use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
-use Plugin\merkmal_range_filter\Filter\RangeFilter;
-use Plugin\merkmal_range_filter\Filter\RangeParser;
-use Plugin\merkmal_range_filter\Filter\Settings;
+use Plugin\feature_sliders\Filter\RangeFilter;
+use Plugin\feature_sliders\Filter\RangeParser;
+use Plugin\feature_sliders\Filter\Settings;
 
 class Bootstrap extends Bootstrapper
 {

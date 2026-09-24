@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Plugin\merkmal_range_filter\Filter;
+namespace Plugin\feature_sliders\Filter;
 
 use JTL\DB\DbInterface;
 use JTL\Filter\AbstractFilter;

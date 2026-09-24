@@ -7,8 +7,8 @@
     <XMLVersion>102</XMLVersion>
     <MinShopVersion>5.7.0</MinShopVersion>
     <MaxShopVersion>5.8.0</MaxShopVersion>
-    <PluginID>merkmal_range_filter</PluginID>
-    <Version>1.0.0</Version>
+    <PluginID>feature_sliders</PluginID>
+    <Version>1.0.1</Version>
     <CreateDate>2026-09-24</CreateDate>
     <Install>
         <Adminmenu>
@@ -76,13 +76,13 @@
         </Boxes>
         <CSS>
             <file>
-                <name>merkmal_range_filter.css</name>
+                <name>feature_sliders.css</name>
                 <priority>5</priority>
             </file>
         </CSS>
         <JS>
             <file>
-                <name>merkmal_range_filter.js</name>
+                <name>feature_sliders.js</name>
                 <priority>5</priority>
                 <position>body</position>
             </file>
