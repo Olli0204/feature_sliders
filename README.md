@@ -14,7 +14,13 @@ Bereich sich mit der Auswahl **überschneidet** (die Auswahl muss nicht vollstä
 - Werte an Variationskindern zählen für den Vaterartikel mit (z. B. Gewichtsbereich je Boardlänge).
 - Die Reglerskala ergibt sich aus den Werten der Artikel in der aktuellen Kategorie/Suche (alle anderen aktiven
   Filter berücksichtigt, der eigene nicht).
-- Der normale Checkbox-Filter desselben Merkmals wird ausgeblendet (abschaltbar).
+- Keine Box-Konfiguration: Der Regler ersetzt im NOVA-Merkmalfilter die Checkbox-Werte genau dieses Merkmals
+  (Seitenleiste: Block `boxes-box-filter-characteristics-characteristics`, Filter-Dialog:
+  `snippets-filter-mobile-filters-collapse`). Titel, Aufklapp-Pfeil, Trennlinie und Position (Merkmal-Sortierung
+  der Wawi) bleiben NOVA-Original. Fehlt das Merkmal in der Liste (z. B. 0 Treffer nach dem Eingrenzen), setzt das
+  Plugin einen Platzhalter ein, damit der Regler erreichbar bleibt.
+- Optik: exakt das Markup des NOVA-Preisfilters (`price-range-inputs`, `col-5`, `input-group-prepend`,
+  `price-range-slide`), daher greifen die Theme-Regeln 1:1 – eigenes CSS nur für den Zurücksetzen-Link.
 
 ### Erkannte Schreibweisen
 
@@ -43,21 +49,21 @@ git clone git@github.com:Olli0204/feature_sliders.git
 
 
 1. Plugin installieren, unter *Einstellungen* das Merkmal wählen (z. B. „Körpergewicht“), Einheit/Schrittweite prüfen.
-2. **Desktop-Seitenleiste:** *Darstellung → Boxen* → Seitentyp *Artikelliste* → Box
-   „Merkmal-Bereichsfilter (Schieberegler)“ in die linke Seitenleiste an die gewünschte Position setzen.
-3. **Mobil / Filter-Dialog:** erscheint automatisch (NOVA-Block `snippets-filter-mobile-filters-generic`).
-4. Das bisherige Fremd-Plugin deaktivieren.
+2. Fertig – der Regler erscheint automatisch im Merkmalfilter (Seitenleiste und Filter-Dialog). Voraussetzung ist
+   nur der normale JTL-Merkmalfilter (*Einstellungen → Navigationsfilter → Merkmalfilter benutzen*).
+3. Das bisherige Fremd-Plugin deaktivieren.
 
 ## Dateien
 
 | Datei | Zweck |
 |---|---|
-| `Bootstrap.php` | Filter registrieren, Slider-Daten an Smarty (`$mrfSlider`), Standard-Merkmalfilter ausblenden, Admin-Tab |
+| `Bootstrap.php` | Filter registrieren, Slider-Daten an Smarty (`$mrfSlider`), Merkmal im Merkmalfilter sicherstellen/aufklappen, Admin-Tab |
 | `Filter/RangeFilter.php` | JTL-Filter: SQL-Bedingung, Reglerskala, URLs |
 | `Filter/RangeParser.php` | Wert-Parser und Treffer-Logik (ohne Shop-Abhängigkeiten) |
 | `Filter/Settings.php` | normalisierte Plugin-Einstellungen |
-| `frontend/boxes/range_filter.tpl` | Sidebar-Box (Markup wie NOVA-Preisfilter) |
-| `frontend/template/snippets/filter/mobile.tpl` | Block-Override für den Filter-Dialog |
+| `frontend/template/boxes/box_filter_characteristics.tpl` | Block-Override Merkmalfilter Seitenleiste |
+| `frontend/template/snippets/filter/mobile.tpl` | Block-Override Merkmalfilter im Filter-Dialog |
+| `frontend/boxes/range_filter.tpl` | leer, nur noch registriert, damit Boxen aus 1.0.x beim Update nicht verwaisen |
 | `frontend/tpl/slider.tpl` | gemeinsames Regler-Markup |
 | `frontend/js/feature_sliders.js` | noUiSlider-Initialisierung (NOVA liefert noUiSlider mit), idempotent, auch nach AJAX |
 | `frontend/css/feature_sliders.css` | Abstände; Griff-/Balken-Optik kommt aus NOVAs `.noUi-*`-Theme |

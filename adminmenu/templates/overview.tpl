@@ -64,9 +64,9 @@
             </div>
             <hr>
             <p class="mb-0">
-                <strong>Einbindung:</strong> Desktop-Seitenleiste über <em>Darstellung → Boxen</em>, Seitentyp
-                <em>Artikelliste</em>, Box „Merkmal-Bereichsfilter (Schieberegler)“ in die linke Seitenleiste setzen.
-                Im mobilen Filter-Dialog erscheint der Regler automatisch.
+                <strong>Einbindung:</strong> automatisch. Der Regler erscheint im Merkmalfilter an der Stelle dieses
+                Merkmals (Reihenfolge wie in der Wawi), in der Seitenleiste und im mobilen Filter-Dialog.
+                Keine Box nötig – eine früher platzierte Box „Merkmal-Bereichsfilter“ kann gelöscht werden.
             </p>
         {/if}
     </div>

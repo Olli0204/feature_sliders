@@ -1,31 +1,12 @@
-/* Merkmal-Bereichsfilter – Regler-Optik (Griffe, Farben) kommt aus NOVAs .noUi-* Theme-Regeln */
-.mrf-slider {
-    padding: 0.25rem 0 0.75rem;
-}
-
-.mrf-inputs {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1.25rem;
-}
-
-.mrf-inputs .mrf-input-group {
-    flex: 0 1 46%;
-    flex-wrap: nowrap;
-    min-width: 0;
-}
-
-.mrf-inputs .mrf-input {
-    min-width: 0;
-}
-
-.mrf-slider .mrf-track {
-    margin: 0 0.5rem 0.75rem;
-}
-
+/* Regler-Optik kommt vollständig aus NOVA (.price-range-inputs, .price-range-slide, .noUi-*).
+   Hier nur, was der Preisfilter nicht kennt. */
 .mrf-slider .mrf-reset {
     display: inline-block;
-    margin-top: 0.25rem;
+    margin-top: 1rem;
     font-size: 0.875rem;
+}
+
+/* Abstand unter dem Regler wie beim NOVA-Preisfilter (.box-filter-price .box-filter-price-collapse) */
+.mrf-box-content {
+    padding-bottom: 1.5rem;
 }
