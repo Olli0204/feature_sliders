@@ -35,6 +35,13 @@ Werte ohne Zahl werden ignoriert; der Admin-Tab **Werteübersicht** listet alle 
 
 ## Einrichtung
 
+Der Plugin-Ordner im Shop muss `plugins/feature_sliders` heißen (= PluginID, Namespace `Plugin\feature_sliders`):
+
+```bash
+git clone git@github.com:Olli0204/weight-slider.git feature_sliders
+```
+
+
 1. Plugin installieren, unter *Einstellungen* das Merkmal wählen (z. B. „Körpergewicht“), Einheit/Schrittweite prüfen.
 2. **Desktop-Seitenleiste:** *Darstellung → Boxen* → Seitentyp *Artikelliste* → Box
    „Merkmal-Bereichsfilter (Schieberegler)“ in die linke Seitenleiste an die gewünschte Position setzen.
@@ -52,6 +59,6 @@ Werte ohne Zahl werden ignoriert; der Admin-Tab **Werteübersicht** listet alle 
 | `frontend/boxes/range_filter.tpl` | Sidebar-Box (Markup wie NOVA-Preisfilter) |
 | `frontend/template/snippets/filter/mobile.tpl` | Block-Override für den Filter-Dialog |
 | `frontend/tpl/slider.tpl` | gemeinsames Regler-Markup |
-| `frontend/js/merkmal_range_filter.js` | noUiSlider-Initialisierung (NOVA liefert noUiSlider mit), idempotent, auch nach AJAX |
-| `frontend/css/merkmal_range_filter.css` | Abstände; Griff-/Balken-Optik kommt aus NOVAs `.noUi-*`-Theme |
+| `frontend/js/feature_sliders.js` | noUiSlider-Initialisierung (NOVA liefert noUiSlider mit), idempotent, auch nach AJAX |
+| `frontend/css/feature_sliders.css` | Abstände; Griff-/Balken-Optik kommt aus NOVAs `.noUi-*`-Theme |
 | `adminmenu/options/characteristics.php` | dynamische Merkmal-Auswahl für die Einstellung |

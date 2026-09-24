@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Plugin\merkmal_range_filter\Filter;
+namespace Plugin\feature_sliders\Filter;
 
 /**
  * Parses characteristic values like "35 - 55 kg" into numeric ranges and decides
