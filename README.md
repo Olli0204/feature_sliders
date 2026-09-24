@@ -1,4 +1,4 @@
-# Merkmal-Bereichsfilter (JTL-Shop 5.7 / 5.8)
+# Merkmal-Bereichsfilter (JTL-Shop 5.7.0 – 5.8.1)
 
 Schieberegler-Filter für Merkmale, die in der Wawi als Bereich gepflegt sind – z. B. **Körpergewicht** mit
 Werten wie „35 - 55 kg“. Der Kunde begrenzt den Bereich links und rechts; angezeigt werden alle Artikel, deren
