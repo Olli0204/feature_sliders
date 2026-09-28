@@ -23,10 +23,7 @@ final class RangeParser
      */
     public static function parse(string $value): ?array
     {
-        $text = \html_entity_decode(\strip_tags($value), \ENT_QUOTES | \ENT_HTML5, 'UTF-8');
-        $text = \str_replace(["\u{2013}", "\u{2014}", "\u{2212}"], '-', $text);
-        // decimal comma → dot, but only between digits ("35,5" → "35.5")
-        $text = (string)\preg_replace('/(\d),(\d)/u', '$1.$2', $text);
+        $text = self::normalise($value);
         if (!\preg_match_all('/\d+(?:\.\d+)?/u', $text, $hits) || \count($hits[0]) === 0) {
             return null;
         }
@@ -43,6 +40,61 @@ final class RangeParser
         }
 
         return ['min' => $number, 'max' => $number];
+    }
+
+    /**
+     * Single-value characteristics ("154 cm", "154W", "Flex 6"): the first number counts.
+     *
+     * @return array{min: float, max: float}|null
+     */
+    public static function parseSingle(string $value): ?array
+    {
+        if (!\preg_match('/\d+(?:\.\d+)?/u', self::normalise($value), $hit)) {
+            return null;
+        }
+        $number = (float)$hit[0];
+
+        return ['min' => $number, 'max' => $number];
+    }
+
+    /**
+     * Unit written behind the number by the majority of the values ("35 - 55 kg" → "kg"),
+     * '' when there is no clear majority.
+     *
+     * @param string[] $values
+     */
+    public static function detectUnit(array $values): string
+    {
+        $counts = [];
+        $total  = 0;
+        foreach ($values as $value) {
+            $text = self::normalise($value);
+            if (!\preg_match('/\d/u', $text)) {
+                continue;
+            }
+            ++$total;
+            if (\preg_match('/\d\s*([\p{L}°%"\'µ]{1,10})\.?$/u', $text, $hit)) {
+                $counts[$hit[1]] = ($counts[$hit[1]] ?? 0) + 1;
+            }
+        }
+        if ($total === 0 || \count($counts) === 0) {
+            return '';
+        }
+        \arsort($counts);
+        $unit = (string)\array_key_first($counts);
+
+        return $counts[$unit] * 2 > $total ? $unit : '';
+    }
+
+    /**
+     * Decodes entities, unifies dashes/spaces and turns a decimal comma between digits into a dot.
+     */
+    private static function normalise(string $value): string
+    {
+        $text = \html_entity_decode(\strip_tags($value), \ENT_QUOTES | \ENT_HTML5, 'UTF-8');
+        $text = \str_replace(["\u{2013}", "\u{2014}", "\u{2212}", "\u{00A0}"], ['-', '-', '-', ' '], $text);
+
+        return \trim((string)\preg_replace('/(\d),(\d)/u', '$1.$2', $text));
     }
 
     /**

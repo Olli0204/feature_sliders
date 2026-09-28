@@ -1,68 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jtlshopplugin>
     <Name>Merkmal-Bereichsfilter</Name>
-    <Description>Schieberegler-Filter für Merkmale, die in der Wawi als Bereich gepflegt sind (z. B. Körpergewicht „35 - 55 kg“). Angezeigt werden alle Artikel, deren Bereich sich mit der Auswahl überschneidet.</Description>
+    <Description>Darstellung der Merkmalfilter je Merkmal einstellbar: Schieberegler für Bereiche (z. B. Körpergewicht „35 - 55 kg“) oder Einzelwerte (z. B. Länge „154 cm“).</Description>
     <Author>Oliver Kamps</Author>
     <URL>https://ollipolli.de</URL>
     <XMLVersion>102</XMLVersion>
     <MinShopVersion>5.7.0</MinShopVersion>
     <MaxShopVersion>5.8.1</MaxShopVersion>
     <PluginID>feature_sliders</PluginID>
-    <Version>1.1.2</Version>
+    <Version>1.2.0</Version>
     <CreateDate>2026-09-24</CreateDate>
     <Install>
         <Adminmenu>
             <Customlink sort="1">
-                <Name>Werteübersicht</Name>
+                <Name>Merkmale</Name>
             </Customlink>
             <Settingslink sort="2">
                 <Name>Einstellungen</Name>
                 <Setting type="checkbox" initialValue="on" sort="1" conf="Y">
                     <Name>Filter aktiv</Name>
-                    <Description>Schaltet den Schieberegler-Filter im Shop ein.</Description>
+                    <Description>Schaltet alle Schieberegler im Shop ein. Welches Merkmal wie dargestellt wird, legen Sie im Tab „Merkmale“ fest.</Description>
                     <ValueName>mrf_active</ValueName>
                 </Setting>
-                <Setting type="selectbox" initialValue="0" sort="2" conf="Y">
-                    <Name>Merkmal</Name>
-                    <Description>Merkmal, dessen Werte als Bereich gepflegt sind (z. B. Körpergewicht mit Werten wie „35 - 55 kg“).</Description>
-                    <ValueName>mrf_characteristic</ValueName>
-                    <OptionsSource>
-                        <File>options/characteristics.php</File>
-                    </OptionsSource>
-                </Setting>
-                <Setting type="selectbox" initialValue="overlap" sort="3" conf="Y">
-                    <Name>Treffer-Logik</Name>
-                    <Description>Wann ein Artikel zur eingestellten Auswahl passt.</Description>
-                    <ValueName>mrf_mode</ValueName>
-                    <SelectboxOptions>
-                        <Option value="overlap" sort="1">Bereiche überschneiden sich (Standard)</Option>
-                        <Option value="contains" sort="2">Artikel-Bereich enthält die Auswahl vollständig</Option>
-                        <Option value="within" sort="3">Artikel-Bereich liegt vollständig in der Auswahl</Option>
-                    </SelectboxOptions>
-                </Setting>
-                <Setting type="text" initialValue="kg" sort="4" conf="Y">
-                    <Name>Einheit</Name>
-                    <Description>Einheit neben den Eingabefeldern, z. B. „kg“.</Description>
-                    <ValueName>mrf_unit</ValueName>
-                </Setting>
-                <Setting type="text" initialValue="1" sort="5" conf="Y">
-                    <Name>Schrittweite</Name>
-                    <Description>Schrittweite des Reglers, z. B. 1 oder 0.5.</Description>
-                    <ValueName>mrf_step</ValueName>
-                </Setting>
-                <Setting type="text" initialValue="" sort="6" conf="Y">
-                    <Name>Überschrift</Name>
-                    <Description>Optional. Leer lassen, um den Merkmalnamen der jeweiligen Sprache zu verwenden.</Description>
-                    <ValueName>mrf_title</ValueName>
-                </Setting>
-                <Setting type="checkbox" initialValue="on" sort="7" conf="Y">
-                    <Name>Regler immer aufgeklappt</Name>
-                    <Description>Zeigt den Regler im Merkmalfilter immer geöffnet an (wie den Preisfilter). Abgewählt verhält er sich wie die übrigen Merkmale.</Description>
-                    <ValueName>mrf_expanded</ValueName>
-                </Setting>
-                <Setting type="text" initialValue="mrf" sort="8" conf="Y">
-                    <Name>URL-Parameter</Name>
-                    <Description>Name des Parameters in der Filter-URL (Kleinbuchstaben, Ziffern, Unterstrich).</Description>
+                <Setting type="text" initialValue="mrf" sort="2" conf="Y">
+                    <Name>URL-Parameter-Präfix</Name>
+                    <Description>Präfix der Filter-Parameter in der URL, gefolgt von der Merkmal-ID (z. B. „mrf12=40_60“). Nur Kleinbuchstaben und Unterstrich.</Description>
                     <ValueName>mrf_url_param</ValueName>
                 </Setting>
             </Settingslink>

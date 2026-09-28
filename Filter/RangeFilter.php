@@ -14,15 +14,18 @@ use JTL\Filter\Type;
 use JTL\Filter\Visibility;
 
 /**
- * Product filter for characteristics maintained as ranges in the Wawi ("35 - 55 kg").
- * URL value: "<from>_<to>". A product is shown when one of its values (or one of its
- * variation children's values) matches the selection according to the configured mode
- * (default: the ranges overlap).
+ * Slider filter for one characteristic. One instance is registered per configured characteristic,
+ * each with its own URL parameter ("mrf<kMerkmal>=<from>_<to>").
+ *
+ * - slider_range:  values are ranges ("35 - 55 kg"), matched by the configured mode (default: overlap)
+ * - slider_single: values are single numbers ("154 cm"), shown when the value lies inside the selection
+ *
+ * Values of variation children count for their parent.
  */
 class RangeFilter extends AbstractFilter
 {
-    /** @var array<int, array<int, array{min: float|null, max: float|null}>> */
-    private static array $rangeCache = [];
+    /** @var array<string, array{ranges: array<int, array{min: float|null, max: float|null}>, unit: string}> */
+    private static array $valueCache = [];
 
     /** @var array<string, string> */
     private static array $nameCache = [];
@@ -38,18 +41,37 @@ class RangeFilter extends AbstractFilter
 
     private ?Settings $settings;
 
-    public function __construct(ProductFilter $productFilter)
+    public function __construct(ProductFilter $productFilter, private readonly ?CharacteristicConfig $config = null)
     {
         parent::__construct($productFilter);
         $this->settings = Settings::get();
         $this->setIsCustom(true)
             ->setType(Type::AND)
-            ->setUrlParam($this->settings?->urlParam ?? 'mrf')
+            ->setUrlParam($this->isUsable() ? $this->settings->urlParam($this->config->characteristicID) : '')
             // never rendered as a filter of its own: the slider replaces the values of the
             // characteristic inside the core characteristic filter (see Bootstrap::prepareListing())
             ->setVisibility(Visibility::SHOW_NEVER)
             ->setFrontendName($this->getTitle())
             ->setFilterName($this->getFrontendName());
+    }
+
+    public function isUsable(): bool
+    {
+        return $this->settings !== null
+            && $this->settings->active
+            && $this->config !== null
+            && $this->config->isSlider()
+            && $this->config->characteristicID > 0;
+    }
+
+    public function getCharacteristicConfig(): ?CharacteristicConfig
+    {
+        return $this->config;
+    }
+
+    public function getCharacteristicID(): int
+    {
+        return $this->config?->characteristicID ?? 0;
     }
 
     /**
@@ -69,7 +91,7 @@ class RangeFilter extends AbstractFilter
         $this->isInitialized = false;
         $this->value         = null;
         $parsed              = self::parseValue($value);
-        if ($parsed === null || $this->settings === null || !$this->settings->isUsable()) {
+        if ($parsed === null || !$this->isUsable()) {
             return $this;
         }
         [$this->from, $this->to] = $parsed;
@@ -77,19 +99,22 @@ class RangeFilter extends AbstractFilter
         $this->isInitialized     = true;
         $this->setName($this->getFrontendName() . ': ' . $this->formatRange($this->from, $this->to));
 
-        $ids = [];
-        foreach ($this->getValueRanges() as $valueID => $range) {
-            if (RangeParser::matches($range, $this->from, $this->to, $this->settings->mode)) {
+        $ids  = [];
+        $mode = $this->config->effectiveMode();
+        foreach ($this->getValueData()['ranges'] as $valueID => $range) {
+            if (RangeParser::matches($range, $this->from, $this->to, $mode)) {
                 $ids[] = $valueID;
             }
         }
+        // the tag keeps the condition unique, so calculateBounds() can remove exactly this one
+        $tag = '/* ' . $this->getUrlParam() . ' */ ';
         if (\count($ids) === 0) {
-            $this->condition = '0 = 1';
+            $this->condition = $tag . '0 = 1';
 
             return $this;
         }
         $in              = \implode(',', $ids);
-        $this->condition = '(EXISTS (SELECT 1 FROM tartikelmerkmal AS mrf_am
+        $this->condition = $tag . '(EXISTS (SELECT 1 FROM tartikelmerkmal AS mrf_am
                     WHERE mrf_am.kArtikel = tartikel.kArtikel AND mrf_am.kMerkmalWert IN (' . $in . '))
                 OR EXISTS (SELECT 1 FROM tartikel AS mrf_child
                     JOIN tartikelmerkmal AS mrf_cm ON mrf_cm.kArtikel = mrf_child.kArtikel
@@ -168,7 +193,7 @@ class RangeFilter extends AbstractFilter
      */
     public function getSliderData(): ?array
     {
-        if ($this->settings === null || !$this->settings->isUsable() || \count($this->getOptions()) === 0) {
+        if (!$this->isUsable() || \count($this->getOptions()) === 0) {
             return null;
         }
         $min      = $this->bounds['min'];
@@ -176,24 +201,37 @@ class RangeFilter extends AbstractFilter
         $active   = $this->isInitialized();
         $from     = $active ? \max($min, \min($this->from, $max)) : $min;
         $to       = $active ? \min($max, \max($this->to, $min)) : $max;
-        $decimals = self::decimals($this->settings->step);
+        $decimals = self::decimals($this->config->step);
 
         return [
-            'className' => $this->getClassName(),
-            'id'        => 'mrf-' . $this->settings->characteristicID,
-            'characteristicID' => $this->settings->characteristicID,
-            'param'     => $this->getUrlParam(),
-            'title'     => $this->getFrontendName(),
-            'unit'      => $this->settings->unit,
-            'min'       => \number_format($min, $decimals, '.', ''),
-            'max'       => \number_format($max, $decimals, '.', ''),
-            'from'      => \number_format($from, $decimals, '.', ''),
-            'to'        => \number_format($to, $decimals, '.', ''),
-            'step'      => self::formatNumber($this->settings->step),
-            'active'    => $active,
-            'baseUrl'   => $this->getBaseURL(),
-            'tpl'       => $this->settings->frontendPath . 'tpl/slider.tpl'
+            'id'               => 'mrf-' . $this->config->characteristicID,
+            'characteristicID' => $this->config->characteristicID,
+            'display'          => $this->config->display,
+            'expanded'         => $this->config->expanded,
+            'param'            => $this->getUrlParam(),
+            'title'            => $this->getFrontendName(),
+            'unit'             => $this->getUnit(),
+            'min'              => \number_format($min, $decimals, '.', ''),
+            'max'              => \number_format($max, $decimals, '.', ''),
+            'from'             => \number_format($from, $decimals, '.', ''),
+            'to'               => \number_format($to, $decimals, '.', ''),
+            'step'             => self::formatNumber($this->config->step),
+            'active'           => $active,
+            'baseUrl'          => $this->getBaseURL(),
+            'tpl'              => $this->settings->frontendPath . 'tpl/slider.tpl'
         ];
+    }
+
+    /**
+     * Configured unit, or the one written behind the values in the Wawi.
+     */
+    public function getUnit(): string
+    {
+        if ($this->config === null) {
+            return '';
+        }
+
+        return $this->config->unit !== '' ? $this->config->unit : $this->getValueData()['unit'];
     }
 
     /**
@@ -208,31 +246,38 @@ class RangeFilter extends AbstractFilter
     }
 
     /**
-     * Slider scale from all values of the characteristic that occur in the current
-     * listing (all other active filters applied, this one ignored).
+     * Slider scale from all values of the characteristic that occur in the current listing
+     * (all other active filters applied – including other sliders – this one removed).
      *
      * @return array{min: float, max: float}|null
      */
     private function calculateBounds(): ?array
     {
-        if ($this->settings === null || !$this->settings->isUsable()) {
+        if (!$this->isUsable()) {
             return null;
         }
-        $ranges = $this->getValueRanges();
+        $ranges = $this->getValueData()['ranges'];
         if (\count($ranges) === 0) {
             return null;
         }
         $productFilter = $this->getProductFilter();
-        $state         = (new StateSQL())->from($productFilter->getCurrentStateData($this->getClassName()));
+        $state         = (new StateSQL())->from($productFilter->getCurrentStateData());
+        if ($this->condition !== '') {
+            $own = \trim($this->condition);
+            $state->setConditions(\array_values(\array_filter(
+                $state->getConditions(),
+                static fn($condition): bool => !\is_string($condition) || \trim($condition) !== $own
+            )));
+        }
         $state->setSelect(['tartikel.kArtikel']);
         $state->setOrderBy('');
         $state->setLimit('');
         $state->setGroupBy(['tartikel.kArtikel']);
         $baseQuery = $productFilter->getFilterSQL()->getBaseQuery($state);
-        $cacheID   = 'mrf_bounds_' . $this->settings->characteristicID . '_' . \md5($baseQuery);
+        $charID    = $this->config->characteristicID;
+        $cacheID   = 'mrf_bounds_' . $charID . '_' . \md5($baseQuery);
         $cache     = $productFilter->getCache();
         if (($valueIDs = $cache->get($cacheID)) === false) {
-            $charID   = $this->settings->characteristicID;
             $valueIDs = \array_map(
                 static fn($row): int => (int)$row->kMerkmalWert,
                 $productFilter->getDB()->getObjects(
@@ -257,32 +302,40 @@ class RangeFilter extends AbstractFilter
         }
         $present = \array_intersect_key($ranges, \array_flip($valueIDs));
 
-        return RangeParser::bounds($present, $this->settings->step);
+        return RangeParser::bounds($present, $this->config->step);
     }
 
     /**
-     * @return array<int, array{min: float|null, max: float|null}> kMerkmalWert => parsed range
+     * @return array{ranges: array<int, array{min: float|null, max: float|null}>, unit: string}
      */
-    private function getValueRanges(): array
+    private function getValueData(): array
     {
-        $charID = $this->settings?->characteristicID ?? 0;
-        if ($charID <= 0) {
-            return [];
+        if ($this->config === null) {
+            return ['ranges' => [], 'unit' => ''];
         }
-        if (!isset(self::$rangeCache[$charID])) {
-            self::$rangeCache[$charID] = self::loadValueRanges($this->getProductFilter()->getDB(), $charID);
+        $key = $this->config->characteristicID . '_' . $this->config->display;
+        if (!isset(self::$valueCache[$key])) {
+            self::$valueCache[$key] = self::loadValueData(
+                $this->getProductFilter()->getDB(),
+                $this->config->characteristicID,
+                $this->config->isSingleValue()
+            );
         }
 
-        return self::$rangeCache[$charID];
+        return self::$valueCache[$key];
     }
 
     /**
      * Parses every value of the characteristic; the shop's default language wins,
      * other languages are only used when it has no parseable text.
      *
-     * @return array<int, array{min: float|null, max: float|null}>
+     * @return array{
+     *     ranges: array<int, array{min: float|null, max: float|null}>,
+     *     unit: string,
+     *     values: array<int, array{text: string, range: array{min: float|null, max: float|null}|null}>
+     * }
      */
-    public static function loadValueRanges(DbInterface $db, int $characteristicID): array
+    public static function loadValueData(DbInterface $db, int $characteristicID, bool $singleValue): array
     {
         $rows   = $db->getObjects(
             "SELECT mw.kMerkmalWert, mws.cWert
@@ -290,45 +343,43 @@ class RangeFilter extends AbstractFilter
                 JOIN tmerkmalwertsprache AS mws ON mws.kMerkmalWert = mw.kMerkmalWert
                 LEFT JOIN tsprache AS sp ON sp.kSprache = mws.kSprache
                 WHERE mw.kMerkmal = :cid
-                ORDER BY mw.kMerkmalWert, (sp.cShopStandard = 'Y') DESC, mws.kSprache",
+                ORDER BY mw.nSort, mw.kMerkmalWert, (sp.cShopStandard = 'Y') DESC, mws.kSprache",
             ['cid' => $characteristicID]
         );
-        $ranges = [];
+        $values = [];
         foreach ($rows as $row) {
             $valueID = (int)$row->kMerkmalWert;
-            if (isset($ranges[$valueID])) {
-                continue;
-            }
-            $range = RangeParser::parse((string)$row->cWert);
-            if ($range !== null) {
-                $ranges[$valueID] = $range;
+            $text    = (string)$row->cWert;
+            $range   = $singleValue ? RangeParser::parseSingle($text) : RangeParser::parse($text);
+            if (!isset($values[$valueID]) || ($values[$valueID]['range'] === null && $range !== null)) {
+                $values[$valueID] = ['text' => $text, 'range' => $range];
             }
         }
+        $ranges = \array_filter(\array_map(static fn(array $v): ?array => $v['range'], $values));
 
-        return $ranges;
+        return [
+            'ranges' => $ranges,
+            'unit'   => RangeParser::detectUnit(\array_column($values, 'text')),
+            'values' => $values,
+        ];
     }
 
     private function getTitle(): string
     {
-        if ($this->settings === null) {
+        $charID = $this->getCharacteristicID();
+        if ($charID <= 0) {
             return '';
         }
-        if ($this->settings->title !== '') {
-            return $this->settings->title;
-        }
-        $charID = $this->settings->characteristicID;
         $langID = $this->getLanguageID();
         $key    = $charID . '_' . $langID;
         if (!isset(self::$nameCache[$key])) {
-            $row                   = $charID > 0
-                ? $this->getProductFilter()->getDB()->getSingleObject(
-                    'SELECT COALESCE(ms.cName, m.cName) AS cName
-                        FROM tmerkmal AS m
-                        LEFT JOIN tmerkmalsprache AS ms ON ms.kMerkmal = m.kMerkmal AND ms.kSprache = :lid
-                        WHERE m.kMerkmal = :cid',
-                    ['cid' => $charID, 'lid' => $langID]
-                )
-                : null;
+            $row                   = $this->getProductFilter()->getDB()->getSingleObject(
+                'SELECT COALESCE(ms.cName, m.cName) AS cName
+                    FROM tmerkmal AS m
+                    LEFT JOIN tmerkmalsprache AS ms ON ms.kMerkmal = m.kMerkmal AND ms.kSprache = :lid
+                    WHERE m.kMerkmal = :cid',
+                ['cid' => $charID, 'lid' => $langID]
+            );
             self::$nameCache[$key] = \trim((string)($row->cName ?? ''));
         }
 
@@ -337,8 +388,8 @@ class RangeFilter extends AbstractFilter
 
     private function formatRange(float $from, float $to): string
     {
-        $decimals = self::decimals($this->settings?->step ?? 1.0);
-        $unit     = $this->settings?->unit ?? '';
+        $decimals = self::decimals($this->config?->step ?? 1.0);
+        $unit     = $this->getUnit();
         $text     = \number_format($from, $decimals, ',', '.') . ' – ' . \number_format($to, $decimals, ',', '.');
 
         return $unit !== '' ? $text . ' ' . $unit : $text;
