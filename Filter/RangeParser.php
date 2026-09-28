@@ -113,12 +113,12 @@ final class RangeParser
     }
 
     /**
-     * Slider scale that covers all given ranges; open ends are ignored.
+     * Smallest and largest number of all given ranges (open ends ignored), not rounded.
      *
      * @param array<array{min: float|null, max: float|null}> $ranges
      * @return array{min: float, max: float}|null
      */
-    public static function bounds(array $ranges, float $step = 1.0): ?array
+    public static function extent(array $ranges): ?array
     {
         $numbers = [];
         foreach ($ranges as $range) {
@@ -128,12 +128,25 @@ final class RangeParser
                 }
             }
         }
-        if (\count($numbers) === 0) {
+
+        return \count($numbers) === 0 ? null : ['min' => \min($numbers), 'max' => \max($numbers)];
+    }
+
+    /**
+     * Slider scale that covers all given ranges; open ends are ignored.
+     *
+     * @param array<array{min: float|null, max: float|null}> $ranges
+     * @return array{min: float, max: float}|null
+     */
+    public static function bounds(array $ranges, float $step = 1.0): ?array
+    {
+        $extent = self::extent($ranges);
+        if ($extent === null) {
             return null;
         }
         $step = $step > 0 ? $step : 1.0;
-        $min  = \floor(\min($numbers) / $step) * $step;
-        $max  = \ceil(\max($numbers) / $step) * $step;
+        $min  = \floor($extent['min'] / $step) * $step;
+        $max  = \ceil($extent['max'] / $step) * $step;
         if ($max <= $min) {
             $max = $min + $step;
         }

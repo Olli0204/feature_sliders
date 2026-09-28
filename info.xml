@@ -8,7 +8,7 @@
     <MinShopVersion>5.7.0</MinShopVersion>
     <MaxShopVersion>5.8.1</MaxShopVersion>
     <PluginID>feature_sliders</PluginID>
-    <Version>1.3.1</Version>
+    <Version>1.4.0</Version>
     <CreateDate>2026-09-24</CreateDate>
     <Install>
         <Adminmenu>
