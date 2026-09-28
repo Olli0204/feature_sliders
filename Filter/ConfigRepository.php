@@ -61,6 +61,14 @@ final class ConfigRepository
     }
 
     /**
+     * @return array<int, CharacteristicConfig>
+     */
+    public function getButtons(): array
+    {
+        return \array_filter($this->getAll(), static fn(CharacteristicConfig $c): bool => $c->isButtons());
+    }
+
+    /**
      * Replaces the whole configuration. Characteristics set to "default" are removed.
      *
      * @param CharacteristicConfig[] $configs

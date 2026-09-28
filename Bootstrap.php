@@ -73,6 +73,37 @@ class Bootstrap extends Bootstrapper
         if (\count($sliders) > 0) {
             Shop::Smarty()->assign('mrfSliders', $sliders);
         }
+        $this->prepareButtons($productFilter);
+    }
+
+    /**
+     * Characteristics shown as button boxes keep the core values, URLs and active states – only the
+     * markup changes (plugin templates). Here they are flagged for the templates and expanded if configured.
+     */
+    private function prepareButtons(ProductFilter $productFilter): void
+    {
+        $buttons = $this->getRepository()->getButtons();
+        if (\count($buttons) === 0) {
+            return;
+        }
+        $settings = Settings::get();
+        $boxes    = [];
+        foreach ($productFilter->getSearchResults()->getCharacteristicFilterOptions() as $option) {
+            $config = $buttons[(int)$option->getValue()] ?? null;
+            if ($config === null) {
+                continue;
+            }
+            $boxes[$config->characteristicID] = [
+                'characteristicID' => $config->characteristicID,
+                'tpl'              => ($settings?->frontendPath ?? '') . 'tpl/buttons.tpl',
+            ];
+            if ($config->expanded) {
+                $option->setIsActive(true);
+            }
+        }
+        if (\count($boxes) > 0) {
+            Shop::Smarty()->assign('mrfButtons', $boxes);
+        }
     }
 
     /**
@@ -157,6 +188,7 @@ class Bootstrap extends Bootstrapper
                 CharacteristicConfig::DISPLAY_DEFAULT       => 'Standard-Filter (Checkboxen)',
                 CharacteristicConfig::DISPLAY_SLIDER_RANGE  => 'Schieberegler: Bereich auf Bereich',
                 CharacteristicConfig::DISPLAY_SLIDER_SINGLE => 'Schieberegler: Bereich auf Einzelwerte',
+                CharacteristicConfig::DISPLAY_BUTTONS       => 'Boxen (Werte als Buttons)',
             ])
             ->assign('mrfModes', [
                 RangeParser::MODE_OVERLAP  => 'Bereiche überschneiden sich',

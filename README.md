@@ -7,6 +7,7 @@ Legt im Backend **je Merkmal** fest, wie es im Merkmalfilter der Artikelliste da
 | Standard-Filter (Checkboxen) | beliebig | JTL-Standard |
 | Schieberegler: **Bereich auf Bereich** | Bereiche, z. B. Körpergewicht „35 - 55 kg“ | je nach Treffer-Logik, Standard: Artikel-Bereich überschneidet sich mit der Auswahl |
 | Schieberegler: **Bereich auf Einzelwerte** | einzelne Zahlen, z. B. Länge „154 cm“ | Wert liegt in der Auswahl |
+| **Boxen** (Werte als Buttons) | beliebig, z. B. Fahrlevel, Profil | JTL-Standard – nur die Optik ändert sich |
 
 Weitere Darstellungsarten können später in derselben Tabelle ergänzt werden (`CharacteristicConfig::DISPLAYS`).
 
@@ -29,6 +30,14 @@ Beim Update von 1.1.x übernimmt die Migration das bisher eingestellte Merkmal (
 Schrittweite, Treffer-Logik und „Aufgeklappt“ als „Bereich auf Bereich“.
 
 Tab **Einstellungen**: „Filter aktiv“ (alle Regler an/aus) und das URL-Parameter-Präfix.
+
+## Boxen-Darstellung
+
+Die Werte erscheinen als Buttons statt als Checkliste. Links, Mehrfachauswahl, Aktiv-Status, PRG-Pattern und die
+Trefferanzahl (Shop-Einstellung „Merkmalfilter: Trefferanzahl anzeigen“) kommen unverändert aus dem JTL-Merkmalfilter;
+im Filter-Dialog lädt NOVA wie gewohnt per AJAX nach (Klasse `filter-item`). Optik: Rahmen/Radius/Schrift wie die
+Eingabefelder des Themes, ausgewählte Werte in der Akzentfarbe (`--mrf-accent` → `--primary` → `#FFA54F`).
+„Aufgeklappt“ gilt auch hier; Einheit, Schrittweite und Treffer-Logik betreffen nur Schieberegler.
 
 ## Funktionsweise
 
@@ -86,6 +95,7 @@ Mehrheit der Werte dieselbe Einheit hinter der Zahl trägt (`kg`, `cm`, `%`, `Zo
 | `frontend/template/boxes/box_filter_characteristics.tpl` | Block-Override Merkmalfilter Seitenleiste |
 | `frontend/template/snippets/filter/mobile.tpl` | Block-Override Merkmalfilter im Filter-Dialog |
 | `frontend/tpl/slider.tpl` | Regler-Markup (NOVA-Preisfilter) |
+| `frontend/tpl/buttons.tpl` | Boxen-Markup (NOVA-`{link}` wie `snippets/filter/characteristic.tpl`) |
 | `frontend/js/feature_sliders.js` | noUiSlider-Initialisierung (NOVA liefert noUiSlider mit), idempotent, auch nach AJAX |
-| `frontend/css/feature_sliders.css` | Abstand unter dem Regler in der Seitenleiste |
+| `frontend/css/feature_sliders.css` | Abstand unter dem Regler, Boxen-Optik |
 | `frontend/boxes/range_filter.tpl` | leer, nur noch registriert, damit Boxen aus 1.0.x beim Update nicht verwaisen |

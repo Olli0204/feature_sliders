@@ -18,7 +18,15 @@ final class CharacteristicConfig
     /** slider, values are single numbers ("154 cm"); shown when the value lies inside the selection */
     public const DISPLAY_SLIDER_SINGLE = 'slider_single';
 
-    public const DISPLAYS = [self::DISPLAY_DEFAULT, self::DISPLAY_SLIDER_RANGE, self::DISPLAY_SLIDER_SINGLE];
+    /** core values rendered as button-like boxes instead of a checkbox list */
+    public const DISPLAY_BUTTONS = 'buttons';
+
+    public const DISPLAYS = [
+        self::DISPLAY_DEFAULT,
+        self::DISPLAY_SLIDER_RANGE,
+        self::DISPLAY_SLIDER_SINGLE,
+        self::DISPLAY_BUTTONS,
+    ];
 
     public function __construct(
         public readonly int $characteristicID,
@@ -55,6 +63,11 @@ final class CharacteristicConfig
     public function isSlider(): bool
     {
         return $this->display === self::DISPLAY_SLIDER_RANGE || $this->display === self::DISPLAY_SLIDER_SINGLE;
+    }
+
+    public function isButtons(): bool
+    {
+        return $this->display === self::DISPLAY_BUTTONS;
     }
 
     public function isSingleValue(): bool
