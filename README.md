@@ -105,6 +105,7 @@ Mehrheit der Werte dieselbe Einheit hinter der Zahl trägt (`kg`, `cm`, `%`, `Zo
 | `frontend/template/boxes/box_filter_characteristics.tpl` | Block-Override Merkmalfilter Seitenleiste |
 | `frontend/template/snippets/filter/mobile.tpl` | Block-Override Merkmalfilter im Filter-Dialog |
 | `frontend/tpl/slider.tpl` | Regler-Markup (NOVA-Preisfilter) |
+| `frontend/tpl/assets.tpl` | bindet CSS/JS einmal pro Seite mit `?v=<Plugin-Version>` ein (nicht über info.xml: dort hängt JTL die Template-Version an, Browser behielten nach Plugin-Updates die alten Dateien) |
 | `frontend/tpl/buttons.tpl` | Boxen-Markup (NOVA-`{link}` wie `snippets/filter/characteristic.tpl`) |
 | `frontend/js/feature_sliders.js` | noUiSlider-Initialisierung (NOVA liefert noUiSlider mit), idempotent, auch nach AJAX |
 | `frontend/css/feature_sliders.css` | Abstand unter dem Regler, Boxen-Optik |
