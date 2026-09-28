@@ -1,11 +1,12 @@
-{* Filter-Dialog (mobil bzw. Filterplatzierung "modal"): unter dem Merkmal des Plugins steht der Schieberegler
-   statt der Checkbox-Werte. Der Aufklapp-Link (Block ...-button) bleibt NOVA-Original. *}
+{* Filter-Dialog (mobil bzw. Filterplatzierung "modal"): unter jedem als Schieberegler konfigurierten Merkmal
+   steht der Regler statt der Checkbox-Werte. Der Aufklapp-Link (Block ...-button) bleibt NOVA-Original. *}
 {block name='snippets-filter-mobile-filters-collapse'}
-    {if isset($mrfSlider) && (int)$subFilter->getValue() === $mrfSlider.characteristicID}
+    {assign var=mrfKey value=(int)$subFilter->getValue()}
+    {if isset($mrfSliders) && isset($mrfSliders[$mrfKey])}
         {collapse id="filter-collapse-{$subFilter->getFrontendName()|seofy}"
             class="snippets-filter-mobile-item-collapse"
             visible=$visible}
-            {include file=$mrfSlider.tpl}
+            {include file=$mrfSliders[$mrfKey].tpl mrfSlider=$mrfSliders[$mrfKey]}
         {/collapse}
     {else}
         {$smarty.block.parent}
