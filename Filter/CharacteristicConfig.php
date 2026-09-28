@@ -34,7 +34,9 @@ final class CharacteristicConfig
         public readonly string $mode = RangeParser::MODE_OVERLAP,
         public readonly string $unit = '',
         public readonly float $step = 1.0,
-        public readonly bool $expanded = true
+        public readonly bool $expanded = true,
+        public readonly bool $active = true,
+        public readonly int $buttonColumns = 0
     ) {
     }
 
@@ -56,7 +58,27 @@ final class CharacteristicConfig
                 : RangeParser::MODE_OVERLAP,
             \mb_substr($unit, 0, 20),
             $step > 0 && $step <= 100000 ? \round($step, 3) : 1.0,
-            \filter_var($data['expanded'] ?? false, \FILTER_VALIDATE_BOOLEAN)
+            \filter_var($data['expanded'] ?? false, \FILTER_VALIDATE_BOOLEAN),
+            // missing = active (rows from 1.2/1.3 and new configurations)
+            \filter_var($data['active'] ?? true, \FILTER_VALIDATE_BOOLEAN),
+            \max(0, \min(4, (int)($data['button_columns'] ?? 0)))
+        );
+    }
+
+    /**
+     * Copy with another active state (the edit form does not touch it).
+     */
+    public function withActive(bool $active): self
+    {
+        return new self(
+            $this->characteristicID,
+            $this->display,
+            $this->mode,
+            $this->unit,
+            $this->step,
+            $this->expanded,
+            $active,
+            $this->buttonColumns
         );
     }
 

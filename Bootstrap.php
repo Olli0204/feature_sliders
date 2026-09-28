@@ -7,15 +7,12 @@ namespace Plugin\feature_sliders;
 use JTL\Events\Dispatcher;
 use JTL\Filter\CharacteristicOption;
 use JTL\Filter\ProductFilter;
-use JTL\Helpers\Form;
-use JTL\Helpers\Request;
 use JTL\Plugin\Bootstrapper;
 use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
-use Plugin\feature_sliders\Filter\CharacteristicConfig;
+use Plugin\feature_sliders\Admin\CharacteristicsAdmin;
 use Plugin\feature_sliders\Filter\ConfigRepository;
 use Plugin\feature_sliders\Filter\RangeFilter;
-use Plugin\feature_sliders\Filter\RangeParser;
 use Plugin\feature_sliders\Filter\Settings;
 
 class Bootstrap extends Bootstrapper
@@ -95,10 +92,12 @@ class Bootstrap extends Bootstrapper
             }
             $boxes[$config->characteristicID] = [
                 'characteristicID' => $config->characteristicID,
-                'columns'          => self::buttonColumns(\array_map(
-                    static fn($value): string => (string)$value->getValue(),
-                    $option->getOptions()
-                )),
+                'columns'          => $config->buttonColumns > 0
+                    ? $config->buttonColumns
+                    : self::buttonColumns(\array_map(
+                        static fn($value): string => (string)$value->getValue(),
+                        $option->getOptions()
+                    )),
                 'tpl'              => ($settings?->frontendPath ?? '') . 'tpl/buttons.tpl',
             ];
             if ($config->expanded) {
@@ -186,130 +185,7 @@ class Bootstrap extends Bootstrapper
      */
     public function renderAdminMenuTab(string $tabName, int $menuID, JTLSmarty $smarty): string
     {
-        $plugin     = $this->getPlugin();
-        $repository = $this->getRepository();
-        $saved      = null;
-        if (Request::postInt('mrf_save') === 1) {
-            $saved = Form::validateToken();
-            if ($saved) {
-                $posted = Request::postVar('mrf', []);
-                $repository->saveAll(\array_map(
-                    static fn($id, $data): CharacteristicConfig => CharacteristicConfig::fromArray(
-                        (int)$id,
-                        \is_array($data) ? $data : []
-                    ),
-                    \array_keys(\is_array($posted) ? $posted : []),
-                    \array_values(\is_array($posted) ? $posted : [])
-                ));
-            }
-        }
-        $configs = $repository->getAll();
-
-        return $smarty->assign('mrfRows', $this->getAdminRows($configs))
-            ->assign('mrfMenuID', $menuID)
-            ->assign('mrfSaved', $saved)
-            ->assign('mrfActive', Settings::fromPlugin($plugin)->active)
-            ->assign('mrfDisplays', [
-                CharacteristicConfig::DISPLAY_DEFAULT       => 'Standard-Filter (Checkboxen)',
-                CharacteristicConfig::DISPLAY_SLIDER_RANGE  => 'Schieberegler: Bereich auf Bereich',
-                CharacteristicConfig::DISPLAY_SLIDER_SINGLE => 'Schieberegler: Bereich auf Einzelwerte',
-                CharacteristicConfig::DISPLAY_BUTTONS       => 'Boxen (Werte als Buttons)',
-            ])
-            ->assign('mrfModes', [
-                RangeParser::MODE_OVERLAP  => 'Bereiche überschneiden sich',
-                RangeParser::MODE_CONTAINS => 'Artikel-Bereich enthält die Auswahl',
-                RangeParser::MODE_WITHIN   => 'Artikel-Bereich liegt in der Auswahl',
-            ])
-            ->fetch($plugin->getPaths()->getAdminPath() . 'templates/characteristics.tpl');
-    }
-
-    /**
-     * One row per characteristic of the shop; value analysis only for configured sliders.
-     *
-     * @param array<int, CharacteristicConfig> $configs
-     * @return array<int, array<string, mixed>>
-     */
-    private function getAdminRows(array $configs): array
-    {
-        $db   = $this->getDB();
-        $rows = [];
-        $data = $db->getObjects(
-            "SELECT m.kMerkmal, m.cName, COUNT(DISTINCT mw.kMerkmalWert) AS valueCount,
-                    SUBSTRING_INDEX(
-                        GROUP_CONCAT(DISTINCT mws.cWert ORDER BY mw.nSort, mws.cWert SEPARATOR '\n'), '\n', 4
-                    ) AS samples
-                FROM tmerkmal AS m
-                LEFT JOIN tmerkmalwert AS mw ON mw.kMerkmal = m.kMerkmal
-                LEFT JOIN tmerkmalwertsprache AS mws ON mws.kMerkmalWert = mw.kMerkmalWert
-                    AND mws.kSprache = (SELECT kSprache FROM tsprache WHERE cShopStandard = 'Y' LIMIT 1)
-                GROUP BY m.kMerkmal, m.cName, m.nSort
-                ORDER BY m.nSort, m.cName"
-        );
-        foreach ($data as $row) {
-            $id     = (int)$row->kMerkmal;
-            $config = $configs[$id] ?? new CharacteristicConfig($id, CharacteristicConfig::DISPLAY_DEFAULT);
-            $item   = [
-                'id'         => $id,
-                'name'       => (string)$row->cName,
-                'valueCount' => (int)$row->valueCount,
-                'samples'    => \array_values(\array_filter(\explode("\n", (string)$row->samples))),
-                'config'     => $config,
-                'values'     => [],
-                'invalid'    => 0,
-                'unit'       => '',
-                'bounds'     => null,
-            ];
-            if ($config->isSlider()) {
-                $item = \array_merge($item, $this->analyseValues($config));
-            }
-            $rows[] = $item;
-        }
-
-        return $rows;
-    }
-
-    /**
-     * @return array{values: array<int, array<string, mixed>>, invalid: int, unit: string, bounds: array|null}
-     */
-    private function analyseValues(CharacteristicConfig $config): array
-    {
-        $db       = $this->getDB();
-        $parsed   = RangeFilter::loadValueData($db, $config->characteristicID, $config->isSingleValue());
-        $products = [];
-        foreach (
-            $db->getObjects(
-                'SELECT kMerkmalWert, COUNT(DISTINCT kArtikel) AS cnt
-                    FROM tartikelmerkmal WHERE kMerkmal = :cid GROUP BY kMerkmalWert',
-                ['cid' => $config->characteristicID]
-            ) as $row
-        ) {
-            $products[(int)$row->kMerkmalWert] = (int)$row->cnt;
-        }
-        $values  = [];
-        $invalid = 0;
-        foreach ($parsed['values'] as $valueID => $value) {
-            $range = $value['range'];
-            if ($range === null) {
-                ++$invalid;
-            }
-            $values[] = [
-                'text'     => $value['text'],
-                'products' => $products[$valueID] ?? 0,
-                'ok'       => $range !== null,
-                'min'      => $range === null ? '–' : ($range['min'] === null
-                    ? 'offen'
-                    : RangeFilter::formatNumber($range['min'])),
-                'max'      => $range === null ? '–' : ($range['max'] === null
-                    ? 'offen'
-                    : RangeFilter::formatNumber($range['max'])),
-            ];
-        }
-
-        return [
-            'values'  => $values,
-            'invalid' => $invalid,
-            'unit'    => $parsed['unit'],
-            'bounds'  => RangeParser::bounds(\array_values($parsed['ranges']), $config->step),
-        ];
+        return (new CharacteristicsAdmin($this->getPlugin(), $this->getDB(), $this->getRepository()))
+            ->render($menuID, $smarty);
     }
 }

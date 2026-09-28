@@ -20,11 +20,15 @@ git clone git@github.com:Olli0204/feature_sliders.git
 ```
 
 1. Plugin installieren bzw. aktualisieren.
-2. Tab **Merkmale**: je Merkmal die Darstellung wählen, optional Einheit (leer = aus den Wawi-Werten übernommen),
-   Schrittweite, Treffer-Logik (nur Bereich auf Bereich) und „Aufgeklappt“. Speichern.
-   „Werte prüfen“ zeigt je Regler-Merkmal alle Werte mit Erkennungsstatus.
-3. Fertig – die Regler erscheinen automatisch im Merkmalfilter (Seitenleiste und Filter-Dialog). Voraussetzung ist
-   nur der normale JTL-Merkmalfilter (*Einstellungen → Navigationsfilter → Merkmalfilter benutzen*).
+2. Tab **Merkmale** → „Merkmal hinzufügen“: Merkmal suchen (auch über Werte), Darstellung wählen. Danach öffnet sich
+   der Bearbeiten-Dialog mit Live-Vorschau und Werteprüfung: Einheit (leer = aus den Wawi-Werten), Schrittweite,
+   Treffer-Logik (nur Bereich auf Bereich), Boxen pro Zeile (automatisch oder fest 1–4) und „Aufgeklappt“.
+3. Fertig – Regler und Boxen erscheinen automatisch im Merkmalfilter (Seitenleiste und Filter-Dialog). Voraussetzung
+   ist nur der normale JTL-Merkmalfilter (*Einstellungen → Navigationsfilter → Merkmalfilter benutzen*).
+
+Die Übersicht zeigt nur die eingestellten Merkmale mit Aktiv-Schalter, Kurzinfo und Werte-Status. **Aus** = die
+Einstellungen bleiben erhalten, im Shop erscheint wieder der normale Checkbox-Filter. **Entfernen** löscht die
+Einstellungen des Merkmals.
 
 Beim Update von 1.1.x übernimmt die Migration das bisher eingestellte Merkmal (Körpergewicht) samt Einheit,
 Schrittweite, Treffer-Logik und „Aufgeklappt“ als „Bereich auf Bereich“.
@@ -37,7 +41,7 @@ Die Werte erscheinen als gleich breite Kacheln im Raster statt als Checkliste, o
 Mehrfachauswahl, Aktiv-Status und PRG-Pattern kommen unverändert aus dem JTL-Merkmalfilter; im Filter-Dialog lädt NOVA
 wie gewohnt per AJAX nach (Klasse `filter-item`). Die Spaltenzahl ergibt sich je Merkmal aus dem längsten Wert
 (`Bootstrap::buttonColumns()`): bis 3 Zeichen 4 Spalten (S/M/L/XL), bis 9 Zeichen 3 (Damen/Herren/Unisex), bis 16
-Zeichen 2 (Fortgeschritten, Hybrid-Camber), sonst 1. Optik: Rahmen/Schrift wie die Eingabefelder des Themes,
+Zeichen 2 (Fortgeschritten, Hybrid-Camber), sonst 1 – oder fest im Bearbeiten-Dialog. Optik: Rahmen/Schrift wie die Eingabefelder des Themes,
 halbfett und zentriert, eingerückt wie der Preisregler, ausgewählte Werte in der Akzentfarbe
 (`--mrf-accent` → `--primary` → `#FFA54F`).
 „Aufgeklappt“ gilt auch hier; Einheit, Schrittweite und Treffer-Logik betreffen nur Schieberegler.
@@ -87,14 +91,17 @@ Mehrheit der Werte dieselbe Einheit hinter der Zahl trägt (`kg`, `cm`, `%`, `Zo
 
 | Datei | Zweck |
 |---|---|
-| `Bootstrap.php` | Filter je Merkmal registrieren, Slider-Daten an Smarty (`$mrfSliders[kMerkmal]`), Merkmal im Merkmalfilter sicherstellen/aufklappen, Admin-Tab „Merkmale“ inkl. Speichern |
+| `Bootstrap.php` | Filter je aktivem Merkmal registrieren, Slider-/Boxen-Daten an Smarty (`$mrfSliders`, `$mrfButtons`), Merkmal im Merkmalfilter sicherstellen/aufklappen |
+| `Admin/CharacteristicsAdmin.php` | Tab „Merkmale“: Aktionen speichern/an-aus/entfernen (CSRF), Übersicht, Vorschau- und Prüfdaten |
 | `Filter/RangeFilter.php` | JTL-Filter je Merkmal: SQL-Bedingung, Reglerskala, Einheit, URLs |
 | `Filter/RangeParser.php` | Parser für Bereiche/Einzelwerte, Einheitenerkennung, Treffer-Logik (ohne Shop-Abhängigkeiten) |
-| `Filter/CharacteristicConfig.php` | Darstellung eines Merkmals (Typ, Treffer-Logik, Einheit, Schrittweite, aufgeklappt) |
+| `Filter/CharacteristicConfig.php` | Darstellung eines Merkmals (aktiv, Typ, Treffer-Logik, Einheit, Schrittweite, aufgeklappt, Boxen pro Zeile) |
 | `Filter/ConfigRepository.php` | Tabelle `feature_sliders_characteristic` lesen/schreiben (gecacht, Plugin-Cache-Gruppe) |
 | `Filter/Settings.php` | globale Einstellungen (aktiv, URL-Präfix) |
 | `Migrations/Migration20260928120000.php` | Tabelle anlegen, Einstellungen aus 1.1.x übernehmen |
-| `adminmenu/templates/characteristics.tpl` | Tab „Merkmale“ |
+| `Migrations/Migration20260928160000.php` | Spalten `active` und `button_columns` (1.4.0) |
+| `adminmenu/templates/characteristics.tpl` | Tab „Merkmale“: Übersicht, Hinzufügen-/Bearbeiten-Dialog mit Live-Vorschau |
+| `adminmenu/templates/display_tiles.tpl` | Auswahlkacheln für die Darstellung |
 | `frontend/template/boxes/box_filter_characteristics.tpl` | Block-Override Merkmalfilter Seitenleiste |
 | `frontend/template/snippets/filter/mobile.tpl` | Block-Override Merkmalfilter im Filter-Dialog |
 | `frontend/tpl/slider.tpl` | Regler-Markup (NOVA-Preisfilter) |

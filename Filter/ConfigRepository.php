@@ -24,7 +24,8 @@ final class ConfigRepository
     }
 
     /**
-     * @return array<int, CharacteristicConfig> kMerkmal => config, only characteristics with a special display
+     * @return array<int, CharacteristicConfig> kMerkmal => config, only characteristics with a special
+     *         display – active and inactive
      */
     public function getAll(): array
     {
@@ -53,42 +54,75 @@ final class ConfigRepository
     }
 
     /**
+     * Active slider characteristics (inactive ones keep their settings but show the core filter).
+     *
      * @return array<int, CharacteristicConfig>
      */
     public function getSliders(): array
     {
-        return \array_filter($this->getAll(), static fn(CharacteristicConfig $c): bool => $c->isSlider());
+        return \array_filter(
+            $this->getAll(),
+            static fn(CharacteristicConfig $c): bool => $c->active && $c->isSlider()
+        );
     }
 
     /**
+     * Active button-box characteristics.
+     *
      * @return array<int, CharacteristicConfig>
      */
     public function getButtons(): array
     {
-        return \array_filter($this->getAll(), static fn(CharacteristicConfig $c): bool => $c->isButtons());
+        return \array_filter(
+            $this->getAll(),
+            static fn(CharacteristicConfig $c): bool => $c->active && $c->isButtons()
+        );
+    }
+
+    public function get(int $characteristicID): ?CharacteristicConfig
+    {
+        return $this->getAll()[$characteristicID] ?? null;
     }
 
     /**
-     * Replaces the whole configuration. Characteristics set to "default" are removed.
-     *
-     * @param CharacteristicConfig[] $configs
+     * Inserts or replaces one characteristic; "default" removes it.
      */
-    public function saveAll(array $configs): void
+    public function save(CharacteristicConfig $config): void
     {
-        $this->db->query('DELETE FROM ' . self::TABLE);
-        foreach ($configs as $config) {
-            if ($config->display === CharacteristicConfig::DISPLAY_DEFAULT) {
-                continue;
-            }
+        $this->db->queryPrepared(
+            'DELETE FROM ' . self::TABLE . ' WHERE kMerkmal = :id',
+            ['id' => $config->characteristicID]
+        );
+        if ($config->display !== CharacteristicConfig::DISPLAY_DEFAULT) {
             $this->db->insert(self::TABLE, (object)[
-                'kMerkmal' => $config->characteristicID,
-                'display'  => $config->display,
-                'mode'     => $config->mode,
-                'unit'     => $config->unit,
-                'step'     => $config->step,
-                'expanded' => $config->expanded ? 1 : 0,
+                'kMerkmal'       => $config->characteristicID,
+                'active'         => $config->active ? 1 : 0,
+                'display'        => $config->display,
+                'mode'           => $config->mode,
+                'unit'           => $config->unit,
+                'step'           => $config->step,
+                'expanded'       => $config->expanded ? 1 : 0,
+                'button_columns' => $config->buttonColumns,
             ]);
         }
+        $this->flush();
+    }
+
+    public function setActive(int $characteristicID, bool $active): void
+    {
+        $this->db->queryPrepared(
+            'UPDATE ' . self::TABLE . ' SET active = :active WHERE kMerkmal = :id',
+            ['active' => $active ? 1 : 0, 'id' => $characteristicID]
+        );
+        $this->flush();
+    }
+
+    public function remove(int $characteristicID): void
+    {
+        $this->db->queryPrepared(
+            'DELETE FROM ' . self::TABLE . ' WHERE kMerkmal = :id',
+            ['id' => $characteristicID]
+        );
         $this->flush();
     }
 
