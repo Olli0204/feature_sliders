@@ -95,6 +95,10 @@ class Bootstrap extends Bootstrapper
             }
             $boxes[$config->characteristicID] = [
                 'characteristicID' => $config->characteristicID,
+                'columns'          => self::buttonColumns(\array_map(
+                    static fn($value): string => (string)$value->getValue(),
+                    $option->getOptions()
+                )),
                 'tpl'              => ($settings?->frontendPath ?? '') . 'tpl/buttons.tpl',
             ];
             if ($config->expanded) {
@@ -104,6 +108,27 @@ class Bootstrap extends Bootstrapper
         if (\count($boxes) > 0) {
             Shop::Smarty()->assign('mrfButtons', $boxes);
         }
+    }
+
+    /**
+     * Equal-width grid: the longest value decides how many boxes fit next to each other
+     * (sidebar ≈ 250–300 px), so long values are not squeezed into narrow boxes.
+     *
+     * @param string[] $labels
+     */
+    public static function buttonColumns(array $labels): int
+    {
+        $longest = 0;
+        foreach ($labels as $label) {
+            $longest = \max($longest, \mb_strlen(\trim(\html_entity_decode($label, \ENT_QUOTES, 'UTF-8'))));
+        }
+
+        return match (true) {
+            $longest <= 3  => 4,
+            $longest <= 9  => 3,
+            $longest <= 16 => 2,
+            default        => 1,
+        };
     }
 
     /**

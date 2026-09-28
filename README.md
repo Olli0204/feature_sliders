@@ -33,10 +33,13 @@ Tab **Einstellungen**: „Filter aktiv“ (alle Regler an/aus) und das URL-Param
 
 ## Boxen-Darstellung
 
-Die Werte erscheinen als Buttons statt als Checkliste. Links, Mehrfachauswahl, Aktiv-Status, PRG-Pattern und die
-Trefferanzahl (Shop-Einstellung „Merkmalfilter: Trefferanzahl anzeigen“) kommen unverändert aus dem JTL-Merkmalfilter;
-im Filter-Dialog lädt NOVA wie gewohnt per AJAX nach (Klasse `filter-item`). Optik: Rahmen/Radius/Schrift wie die
-Eingabefelder des Themes, ausgewählte Werte in der Akzentfarbe (`--mrf-accent` → `--primary` → `#FFA54F`).
+Die Werte erscheinen als gleich breite Kacheln im Raster statt als Checkliste, ohne Trefferanzahl. Links,
+Mehrfachauswahl, Aktiv-Status und PRG-Pattern kommen unverändert aus dem JTL-Merkmalfilter; im Filter-Dialog lädt NOVA
+wie gewohnt per AJAX nach (Klasse `filter-item`). Die Spaltenzahl ergibt sich je Merkmal aus dem längsten Wert
+(`Bootstrap::buttonColumns()`): bis 3 Zeichen 4 Spalten (S/M/L/XL), bis 9 Zeichen 3 (Damen/Herren/Unisex), bis 16
+Zeichen 2 (Fortgeschritten, Hybrid-Camber), sonst 1. Optik: Rahmen/Schrift wie die Eingabefelder des Themes,
+halbfett und zentriert, eingerückt wie der Preisregler, ausgewählte Werte in der Akzentfarbe
+(`--mrf-accent` → `--primary` → `#FFA54F`).
 „Aufgeklappt“ gilt auch hier; Einheit, Schrittweite und Treffer-Logik betreffen nur Schieberegler.
 
 ## Funktionsweise

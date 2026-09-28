@@ -5,33 +5,40 @@
     padding-bottom: 1.5rem;
 }
 
-/* Boxen-Darstellung: Merkmalwerte als Buttons. Farben/Rahmen wie die NOVA-Eingabefelder des Themes
-   (Text #525252, Rahmen #707070, Radius 0.125rem), Akzent aus --mrf-accent → --primary → #FFA54F. */
+/* Boxen-Darstellung: Merkmalwerte als gleich breite Kacheln im Raster (Spaltenzahl je Merkmal aus PHP).
+   Farben/Rahmen wie die NOVA-Eingabefelder des Themes (Text #525252, Rahmen #707070), Einrückung wie der
+   Preisregler (.price-range-slide), Auswahl in der Akzentfarbe (--mrf-accent → --primary → #FFA54F). */
 .mrf-buttons {
     --mrf-accent: var(--primary, #FFA54F);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0.25rem 0 1.5rem;
+    --mrf-cols: 3;
+    display: grid;
+    grid-template-columns: repeat(var(--mrf-cols), minmax(0, 1fr));
+    gap: 0.75rem 1.25rem;
+    padding: 0.25rem 0.5rem 1.5rem;
 }
 
+.mrf-buttons.mrf-buttons-cols-1 { --mrf-cols: 1; }
+.mrf-buttons.mrf-buttons-cols-2 { --mrf-cols: 2; column-gap: 0.75rem; }
+.mrf-buttons.mrf-buttons-cols-4 { --mrf-cols: 4; column-gap: 0.75rem; }
+
 .mrf-buttons .mrf-button.filter-item {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.375rem;
-    min-width: 2.75rem;
+    min-height: 1.875rem;
     margin: 0;
-    padding: 0.375rem 0.75rem;
+    padding: 0.25rem 0.375rem;
     font-size: 0.875rem;
-    font-weight: 400;
-    line-height: 1.25;
+    font-weight: 600;
+    line-height: 1.2;
     color: #525252;
     text-align: center;
     text-decoration: none;
+    overflow-wrap: anywhere;
+    hyphens: auto;
     background-color: #ffffff;
     border: 1px solid #707070;
-    border-radius: 0.125rem;
+    border-radius: 0.1875rem;
     transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out, color 0.15s ease-in-out;
 }
 
@@ -45,17 +52,7 @@
 .mrf-buttons .mrf-button.filter-item.active,
 .mrf-buttons .mrf-button.filter-item:active {
     color: #ffffff;
-    font-weight: 600;
     background-color: var(--mrf-accent);
     border-color: var(--mrf-accent);
     box-shadow: none;
-}
-
-.mrf-buttons .mrf-button-count {
-    font-size: 0.75rem;
-    opacity: 0.65;
-}
-
-.mrf-buttons .mrf-button.active .mrf-button-count {
-    opacity: 0.9;
 }

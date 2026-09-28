@@ -12,7 +12,7 @@
         {collapse id="filter-collapse-{$subFilter->getFrontendName()|seofy}"
             class="snippets-filter-mobile-item-collapse"
             visible=$visible}
-            {include file=$mrfButtons[$mrfKey].tpl Merkmal=$subFilter}
+            {include file=$mrfButtons[$mrfKey].tpl Merkmal=$subFilter mrfColumns=$mrfButtons[$mrfKey].columns}
         {/collapse}
     {else}
         {$smarty.block.parent}

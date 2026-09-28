@@ -7,7 +7,7 @@
             {include file=$mrfSliders[$mrfKey].tpl mrfSlider=$mrfSliders[$mrfKey]}
         </div>
     {elseif isset($mrfButtons) && isset($mrfButtons[$mrfKey])}
-        {include file=$mrfButtons[$mrfKey].tpl Merkmal=$characteristic}
+        {include file=$mrfButtons[$mrfKey].tpl Merkmal=$characteristic mrfColumns=$mrfButtons[$mrfKey].columns}
     {else}
         {$smarty.block.parent}
     {/if}
