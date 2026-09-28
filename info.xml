@@ -8,7 +8,7 @@
     <MinShopVersion>5.7.0</MinShopVersion>
     <MaxShopVersion>5.8.1</MaxShopVersion>
     <PluginID>feature_sliders</PluginID>
-    <Version>1.4.0</Version>
+    <Version>1.4.1</Version>
     <CreateDate>2026-09-24</CreateDate>
     <Install>
         <Adminmenu>
@@ -36,19 +36,6 @@
                 <TemplateFile>range_filter.tpl</TemplateFile>
             </Box>
         </Boxes>
-        <CSS>
-            <file>
-                <name>feature_sliders.css</name>
-                <priority>5</priority>
-            </file>
-        </CSS>
-        <JS>
-            <file>
-                <name>feature_sliders.js</name>
-                <priority>5</priority>
-                <position>body</position>
-            </file>
-        </JS>
         <Locales>
             <Variable>
                 <Name>mrf_from</Name>

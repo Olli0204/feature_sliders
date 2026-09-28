@@ -71,6 +71,27 @@ class Bootstrap extends Bootstrapper
             Shop::Smarty()->assign('mrfSliders', $sliders);
         }
         $this->prepareButtons($productFilter);
+        $this->assignAssets(\count($sliders) > 0);
+    }
+
+    /**
+     * CSS/JS are linked by the plugin templates themselves with the plugin version as cache buster.
+     * Registered via info.xml, JTL would append the template version (?v=5.8.2) – after a plugin
+     * update browsers kept the old files.
+     */
+    private function assignAssets(bool $hasSliders): void
+    {
+        $smarty = Shop::Smarty();
+        if (!$hasSliders && $smarty->getTemplateVars('mrfButtons') === null) {
+            return;
+        }
+        $base    = $this->getPlugin()->getPaths()->getFrontendURL();
+        $version = \rawurlencode((string)$this->getPlugin()->getMeta()->getVersion());
+        $smarty->assign('mrfAssets', [
+            'tpl' => $this->getPlugin()->getPaths()->getFrontendPath() . 'tpl/assets.tpl',
+            'css' => $base . 'css/feature_sliders.css?v=' . $version,
+            'js'  => $hasSliders ? $base . 'js/feature_sliders.js?v=' . $version : '',
+        ]);
     }
 
     /**
