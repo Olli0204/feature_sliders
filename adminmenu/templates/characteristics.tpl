@@ -18,7 +18,8 @@
         <ul class="text-muted small mb-3">
             <li><strong>Bereich auf Bereich</strong> – Werte sind Bereiche, z. B. Körpergewicht „35 - 55 kg“. Treffer je nach Treffer-Logik (Standard: Bereiche überschneiden sich).</li>
             <li><strong>Bereich auf Einzelwerte</strong> – Werte sind einzelne Zahlen, z. B. Länge „154 cm“. Treffer, wenn der Wert im eingestellten Bereich liegt.</li>
-            <li><strong>Einheit</strong> leer lassen = wird aus den Wawi-Werten übernommen.</li>
+            <li><strong>Boxen</strong> – die Werte erscheinen als Buttons statt als Checkliste; Auswahl, Mehrfachauswahl und Trefferanzahl wie beim Standard-Filter.</li>
+            <li><strong>Einheit</strong> leer lassen = wird aus den Wawi-Werten übernommen (nur Schieberegler).</li>
         </ul>
 
         <div class="form-group" style="max-width: 320px;">
@@ -78,7 +79,7 @@
                                            name="mrf[{$row.id}][step]" value="{$cfg->step|string_format:'%g'}">
                                 </td>
                                 <td class="text-center">
-                                    <input type="checkbox" class="mrf-slider-field" name="mrf[{$row.id}][expanded]" value="1"{if $cfg->expanded} checked{/if}>
+                                    <input type="checkbox" class="mrf-any-field" name="mrf[{$row.id}][expanded]" value="1"{if $cfg->expanded} checked{/if}>
                                 </td>
                                 <td class="text-nowrap">
                                     {if $cfg->isSlider()}
@@ -163,9 +164,11 @@
     }
     function sync(row) {
         var display = row.querySelector('.mrf-display').value;
-        var slider  = display !== 'default';
-        row.querySelectorAll('.mrf-slider-field').forEach(function (field) {
-            var off = !slider || (field.classList.contains('mrf-range-field') && display === 'slider_single');
+        var slider  = display === 'slider_range' || display === 'slider_single';
+        row.querySelectorAll('.mrf-slider-field, .mrf-any-field').forEach(function (field) {
+            var off = field.classList.contains('mrf-any-field')
+                ? display === 'default'
+                : !slider || (field.classList.contains('mrf-range-field') && display === 'slider_single');
             field.disabled = off;
             field.style.opacity = off ? '0.35' : '';
         });
@@ -176,7 +179,7 @@
     });
     // disabled fields are not submitted – enable them right before saving so values survive a type switch
     document.getElementById('mrf-form').addEventListener('submit', function () {
-        table.querySelectorAll('.mrf-slider-field').forEach(function (field) { field.disabled = false; });
+        table.querySelectorAll('.mrf-slider-field, .mrf-any-field').forEach(function (field) { field.disabled = false; });
     });
     table.querySelectorAll('.mrf-toggle-values').forEach(function (button) {
         button.addEventListener('click', function () {
