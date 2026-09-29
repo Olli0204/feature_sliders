@@ -8,7 +8,7 @@
     <MinShopVersion>5.7.0</MinShopVersion>
     <MaxShopVersion>5.8.1</MaxShopVersion>
     <PluginID>feature_sliders</PluginID>
-    <Version>1.5.1</Version>
+    <Version>1.5.2</Version>
     <CreateDate>2026-09-24</CreateDate>
     <Install>
         <Adminmenu>
@@ -22,13 +22,8 @@
                 <Name>Einstellungen</Name>
                 <Setting type="checkbox" initialValue="on" sort="1" conf="Y">
                     <Name>Filter aktiv</Name>
-                    <Description>Schaltet alle Schieberegler im Shop ein. Welches Merkmal wie dargestellt wird, legen Sie im Tab „Merkmale“ fest.</Description>
+                    <Description>Schaltet das Plugin im Shop ein: Schieberegler, Boxen und Filtergruppen. Ausgeschaltet erscheinen überall die normalen JTL-Merkmalfilter.</Description>
                     <ValueName>mrf_active</ValueName>
-                </Setting>
-                <Setting type="text" initialValue="mrf" sort="2" conf="Y">
-                    <Name>URL-Parameter-Präfix</Name>
-                    <Description>Präfix der Filter-Parameter in der URL, gefolgt von der Merkmal-ID (z. B. „mrf12=40_60“). Nur Kleinbuchstaben und Unterstrich.</Description>
-                    <ValueName>mrf_url_param</ValueName>
                 </Setting>
             </Settingslink>
         </Adminmenu>

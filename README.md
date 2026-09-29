@@ -33,7 +33,7 @@ Einstellungen des Merkmals.
 Beim Update von 1.1.x übernimmt die Migration das bisher eingestellte Merkmal (Körpergewicht) samt Einheit,
 Schrittweite, Treffer-Logik und „Aufgeklappt“ als „Bereich auf Bereich“.
 
-Tab **Einstellungen**: „Filter aktiv“ (alle Regler an/aus) und das URL-Parameter-Präfix.
+Tab **Einstellungen**: „Filter aktiv“ (alle Regler und Boxen an/aus).
 
 ## Filtergruppen
 
@@ -117,7 +117,7 @@ Mehrheit der Werte dieselbe Einheit hinter der Zahl trägt (`kg`, `cm`, `%`, `Zo
 | `Filter/GroupRepository.php` | Filtergruppen (Tabellen `feature_sliders_group`, `…_group_characteristic`, `…_group_category`), erlaubte Merkmale je Kategorie |
 | `Filter/GroupRestriction.php` | begrenzt/sortiert den Merkmalfilter einer Kategorie auf ihre Gruppen, überstimmt das Wawi-Attribut |
 | `Admin/GroupsAdmin.php` | Tab „Filtergruppen“: anlegen/bearbeiten/löschen/sortieren (CSRF), Kategoriebaum, Wawi-Attribut-Übersicht |
-| `Filter/Settings.php` | globale Einstellungen (aktiv, URL-Präfix) |
+| `Filter/Settings.php` | globale Einstellungen (aktiv; URL-Präfix fest `mrf`) |
 | `Migrations/Migration20260928120000.php` | Tabelle anlegen, Einstellungen aus 1.1.x übernehmen |
 | `Migrations/Migration20260928160000.php` | Spalten `active` und `button_columns` (1.4.0) |
 | `adminmenu/templates/characteristics.tpl` | Tab „Merkmale“: Übersicht, Hinzufügen-/Bearbeiten-Dialog mit Live-Vorschau |
