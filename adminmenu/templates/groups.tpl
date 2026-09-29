@@ -1,32 +1,36 @@
 {* Tab „Filtergruppen“: welche Merkmale (in welcher Reihenfolge) in welchen Kategorien als Filter erscheinen. *}
 <style>
-    .mrf-groups .mrf-chip { display: inline-block; margin: 0 .25rem .25rem 0; padding: .125rem .5rem; font-size: .8125rem; background: #eef1f4; border-radius: .75rem; white-space: nowrap; }
-    .mrf-groups .mrf-muted-list { font-size: .8125rem; color: #6c757d; }
-    .mrf-groups .mrf-drag-cell { width: 2rem; cursor: grab; color: #9aa5b1; }
+    /* Farben aus JTLs Theme-Variablen (hell/dunkel, custom.css). */
+    .mrf-groups .mrf-chip { display: inline-block; margin: 0 .25rem .25rem 0; padding: .125rem .5rem; font-size: .8125rem; background: var(--table-accent-color, #f5f7fa); border: 1px solid var(--border-color, #e4e9f2); border-radius: .75rem; white-space: nowrap; }
+    .mrf-groups .mrf-muted-list { font-size: .8125rem; }
+    .mrf-groups .mrf-muted-list .mrf-path { opacity: .75; }
+    .mrf-groups .mrf-drag-cell { width: 2rem; cursor: grab; opacity: .6; }
     .mrf-groups tr.mrf-dragging, .mrf-sort-item.mrf-dragging { opacity: .4; }
     .mrf-groups .mrf-empty { padding: 2.5rem 1rem; text-align: center; }
-    .mrf-groups .mrf-empty .fal { font-size: 2rem; opacity: .35; display: block; margin-bottom: .75rem; }
+    .mrf-groups .mrf-empty-icon { display: block; margin: 0 auto .75rem; font-size: 2rem; line-height: 1; opacity: .35; }
     .mrf-section-label { font-weight: 600; margin-bottom: .5rem; }
-    .mrf-sortable { list-style: none; margin: 0; padding: 0; min-height: 3rem; border: 1px solid #d6dbe1; border-radius: .25rem; max-height: 20rem; overflow-y: auto; counter-reset: mrf; }
-    .mrf-sortable:empty::before { content: attr(data-empty); display: block; padding: .75rem; color: #6c757d; font-size: .875rem; }
-    .mrf-sort-item { display: flex; align-items: center; gap: .5rem; padding: .4rem .75rem; border-bottom: 1px solid #eef0f3; background: #fff; counter-increment: mrf; }
+    .mrf-section-label .mrf-hint { font-weight: 400; opacity: .7; }
+    .mrf-sortable { list-style: none; margin: 0; padding: 0; min-height: 3rem; border: 1px solid var(--border-color, #e4e9f2); border-radius: .25rem; max-height: 20rem; overflow-y: auto; counter-reset: mrf; }
+    .mrf-sortable:empty::before { content: attr(data-empty); display: block; padding: .75rem; opacity: .7; font-size: .875rem; }
+    .mrf-sort-item { display: flex; align-items: center; gap: .5rem; padding: .4rem .75rem; border-bottom: 1px solid var(--border-color, #e4e9f2); background: var(--card-bg, #fff); counter-increment: mrf; }
     .mrf-sort-item:last-child { border-bottom: 0; }
-    .mrf-sort-item::before { content: counter(mrf) "."; width: 1.5rem; color: #9aa5b1; font-size: .8125rem; }
-    .mrf-sort-item .mrf-handle { cursor: grab; color: #9aa5b1; }
+    .mrf-sort-item::before { content: counter(mrf) "."; width: 1.5rem; opacity: .6; font-size: .8125rem; }
+    .mrf-sort-item .mrf-handle { cursor: grab; opacity: .6; }
     .mrf-sort-item .mrf-sort-name { flex: 1; }
     .mrf-sort-item .mrf-sort-actions { display: flex; gap: .5rem; }
-    .mrf-sort-item.mrf-drop-before { box-shadow: inset 0 2px 0 #5cbcf6; }
-    .mrf-pick-list { max-height: 20rem; overflow-y: auto; border: 1px solid #d6dbe1; border-radius: .25rem; }
-    .mrf-pick-item { display: flex; align-items: center; gap: .5rem; width: 100%; padding: .4rem .75rem; border: 0; border-bottom: 1px solid #eef0f3; background: #fff; text-align: left; color: inherit; }
-    .mrf-pick-item:hover { background: #f5f7fa; }
+    .mrf-pick-list { max-height: 20rem; overflow-y: auto; border: 1px solid var(--border-color, #e4e9f2); border-radius: .25rem; }
+    .mrf-pick-item { display: flex; align-items: center; gap: .5rem; width: 100%; padding: .4rem .75rem; border: 0; border-bottom: 1px solid var(--border-color, #e4e9f2); background: var(--card-bg, #fff); text-align: left; color: var(--body-color, #435a6b); }
+    .mrf-pick-item:hover { background: var(--table-accent-color, #f5f7fa); }
+    .mrf-pick-item .mrf-plus { opacity: .6; }
     .mrf-cat-list { max-height: 22rem; }
-    .mrf-cat-item { display: flex; align-items: center; gap: .5rem; margin: 0; padding-top: .3rem; padding-bottom: .3rem; padding-right: .75rem; border-bottom: 1px solid #eef0f3; cursor: pointer; font-weight: 400; }
-    .mrf-cat-item:hover { background: #f5f7fa; }
+    .mrf-cat-item { display: flex; align-items: center; gap: .5rem; margin: 0; padding-top: .3rem; padding-bottom: .3rem; padding-right: .75rem; border-bottom: 1px solid var(--border-color, #e4e9f2); cursor: pointer; font-weight: 400; }
+    .mrf-cat-item:hover { background: var(--table-accent-color, #f5f7fa); }
     .mrf-cat-item .mrf-cat-name { flex: 0 1 auto; }
     .mrf-cat-list.is-searching .mrf-cat-item { padding-left: .75rem !important; }
     .mrf-cat-list.is-searching .mrf-cat-name { display: none; }
-    .mrf-cat-list.is-searching .mrf-cat-path { display: inline !important; color: inherit !important; }
+    .mrf-cat-list.is-searching .mrf-cat-path { display: inline !important; opacity: 1 !important; }
     .mrf-cat-item .badge { font-weight: 400; }
+    .mrf-badge-other { background: var(--table-accent-color, #f5f7fa); color: var(--body-color, #435a6b); border: 1px solid var(--border-color, #e4e9f2); }
 </style>
 
 <div class="mrf-groups">
@@ -35,11 +39,8 @@
     {/if}
 
     <div class="card">
-        <div class="card-header d-flex align-items-center">
-            <div class="subheading1 mr-auto">Filtergruppen</div>
-            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#mrf-group-new">
-                <i class="fal fa-plus"></i> Gruppe anlegen
-            </button>
+        <div class="card-header">
+            <div class="subheading1">Filtergruppen</div>
         </div>
         <div class="card-body">
             <p class="text-muted mb-3">
@@ -49,12 +50,9 @@
                 (Wawi-Funktionsattribut „merkmalfilter“ oder alle Merkmale), ebenso Suche und Herstellerseiten.
             </p>
             {if $mrfGroups|count === 0}
-                <div class="mrf-empty text-muted">
-                    <span class="fal fa-layer-group"></span>
-                    Noch keine Filtergruppen angelegt.<br>
-                    <button type="button" class="btn btn-outline-primary btn-sm mt-3" data-toggle="modal" data-target="#mrf-group-new">
-                        <i class="fal fa-plus"></i> Erste Gruppe anlegen
-                    </button>
+                <div class="mrf-empty">
+                    <span class="mrf-empty-icon"><span class="fal fa-layer-group"></span></span>
+                    Noch keine Filtergruppen angelegt – unten über „Gruppe anlegen“ starten.
                 </div>
             {else}
                 <form method="post" id="mrf-group-order-form">
@@ -87,8 +85,8 @@
                                             {if $group.categoryPaths|count === 0}
                                                 <span class="text-warning">keiner Kategorie zugewiesen</span>
                                             {else}
-                                                <strong class="text-body">{$group.categoryPaths|count} {if $group.categoryPaths|count === 1}Kategorie{else}Kategorien{/if}</strong><br>
-                                                {foreach $group.categoryPaths as $path}{if $path@iteration <= 3}{if !$path@first}<br>{/if}{$path|escape:'html'}{/if}{/foreach}
+                                                <strong>{$group.categoryPaths|count} {if $group.categoryPaths|count === 1}Kategorie{else}Kategorien{/if}</strong><br>
+                                                <span class="mrf-path">{foreach $group.categoryPaths as $path}{if $path@iteration <= 3}{if !$path@first}<br>{/if}{$path|escape:'html'}{/if}{/foreach}</span>
                                                 {if $group.moreCategories > 0}<br>… und {$group.moreCategories} weitere{/if}
                                             {/if}
                                         </td>
@@ -124,6 +122,15 @@
                     </form>
                 {/foreach}
             {/if}
+        </div>
+        <div class="card-footer save-wrapper">
+            <div class="row">
+                <div class="ml-auto col-sm-6 col-xl-auto submit">
+                    <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#mrf-group-new">
+                        <i class="fa fa-plus"></i> Gruppe anlegen
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -261,7 +268,7 @@
             li.setAttribute('data-id', id);
             li.innerHTML = '<span class="mrf-handle fal fa-grip-vertical" aria-hidden="true"></span>'
                 + '<span class="mrf-sort-name">' + escapeHtml(button.getAttribute('data-name')) + '</span>'
-                + (display ? '<span class="badge badge-light">' + escapeHtml(display) + '</span>' : '')
+                + (display ? '<span class="badge mrf-badge-other">' + escapeHtml(display) + '</span>' : '')
                 + '<span class="mrf-sort-actions">'
                 + '<button type="button" class="btn btn-link btn-sm p-0 mrf-move" data-dir="-1" title="Nach oben"><span class="fal fa-chevron-up"></span></button>'
                 + '<button type="button" class="btn btn-link btn-sm p-0 mrf-move" data-dir="1" title="Nach unten"><span class="fal fa-chevron-down"></span></button>'

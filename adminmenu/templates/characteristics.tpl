@@ -1,30 +1,35 @@
 {* Tab „Merkmale“: Übersicht der eingestellten Merkmale, Hinzufügen- und Bearbeiten-Dialoge mit Live-Vorschau.
    Bausteine wie im JTL-Backend (card/subheading1, table.list, custom-switch, btn-link + icon-hover, modal). *}
 <style>
-    .mrf-admin .mrf-samples { font-size: .8125rem; }
+    /* Farben aus JTLs Theme-Variablen (hell/dunkel, custom.css): --card-bg, --body-color, --border-color,
+       --table-accent-color, --primary. Nur die Shop-Vorschau bleibt bewusst hell wie das Frontend. */
+    .mrf-admin .mrf-samples { font-size: .8125rem; opacity: .75; }
     .mrf-admin .mrf-row-inactive td:not(.mrf-col-active):not(.mrf-col-actions) { opacity: .45; }
     .mrf-admin .mrf-display-label { white-space: nowrap; }
-    .mrf-admin .mrf-display-label .fal { width: 1.25rem; }
+    .mrf-admin .mrf-display-label .fal, .mrf-admin .mrf-display-label svg { width: 1.25rem; }
     .mrf-admin .mrf-empty { padding: 2.5rem 1rem; text-align: center; }
-    .mrf-admin .mrf-empty .fal { font-size: 2rem; opacity: .35; display: block; margin-bottom: .75rem; }
+    .mrf-admin .mrf-empty-icon { display: block; margin: 0 auto .75rem; font-size: 2rem; line-height: 1; opacity: .35; }
+    .mrf-admin .mrf-state { display: block; font-size: .75rem; opacity: .7; margin-top: .125rem; }
+    .mrf-admin .custom-switch .custom-control-input:checked ~ .custom-control-label::before,
+    .mrf-edit-modal .custom-switch .custom-control-input:checked ~ .custom-control-label::before { background-color: var(--primary, #5cbcf6); border-color: var(--primary, #5cbcf6); }
     .mrf-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: .75rem; }
-    .mrf-tile { position: relative; display: block; margin: 0; padding: .75rem; border: 1px solid #d6dbe1; border-radius: .25rem; cursor: pointer; background: #fff; }
-    .mrf-tile:hover { border-color: var(--primary, #1d6fb8); }
+    .mrf-tile { position: relative; display: block; margin: 0; padding: .75rem; border: 1px solid var(--border-color, #e4e9f2); border-radius: .25rem; cursor: pointer; background: var(--card-bg, #fff); color: var(--body-color, #435a6b); }
+    .mrf-tile:hover { border-color: var(--primary, #5cbcf6); }
     .mrf-tile input { position: absolute; opacity: 0; pointer-events: none; }
-    .mrf-tile.is-selected { border-color: var(--primary, #1d6fb8); box-shadow: 0 0 0 1px var(--primary, #1d6fb8); }
+    .mrf-tile.is-selected { border-color: var(--primary, #5cbcf6); box-shadow: 0 0 0 1px var(--primary, #5cbcf6); }
     .mrf-tile-title { display: block; font-weight: 600; font-size: .875rem; margin-top: .5rem; }
-    .mrf-tile-text { display: block; font-size: .75rem; color: #6c757d; line-height: 1.3; margin-top: .125rem; }
+    .mrf-tile-text { display: block; font-size: .75rem; opacity: .75; line-height: 1.3; margin-top: .125rem; }
     .mrf-tile-art { display: block; height: 2rem; }
     .mrf-tile-art .t { position: relative; display: block; height: 3px; margin: .9rem .35rem 0; background: #ffa54f; border-radius: 2px; }
     .mrf-tile-art .t::before, .mrf-tile-art .t::after { content: ''; position: absolute; top: -4px; width: 11px; height: 11px; border-radius: 50%; background: #ffa54f; box-shadow: 0 0 0 3px rgba(255, 165, 79, .35); }
     .mrf-tile-art .t::before { left: -4px; }
     .mrf-tile-art .t::after { right: -4px; }
     .mrf-tile-art .t.single::before { left: 30%; }
-    .mrf-tile-art .t.single { background: linear-gradient(90deg, #e3e3e3 30%, #ffa54f 30%); }
+    .mrf-tile-art .t.single { background: linear-gradient(90deg, var(--border-color, #e4e9f2) 30%, #ffa54f 30%); }
     .mrf-tile-art .b { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding-top: .35rem; }
-    .mrf-tile-art .b i { display: block; height: 1.1rem; border: 1px solid #707070; border-radius: 2px; }
-    .mrf-tile-art .b i:nth-child(2) { background: #ffa54f; border-color: #ffa54f; }
-    .mrf-preview { background: #f5f7fa; border-radius: .25rem; padding: 1rem; }
+    .mrf-tile-art .b i { display: block; height: 1.1rem; border: 1px solid currentColor; border-radius: 2px; opacity: .8; }
+    .mrf-tile-art .b i:nth-child(2) { background: #ffa54f; border-color: #ffa54f; opacity: 1; }
+    .mrf-preview { background: var(--table-accent-color, #f5f7fa); border-radius: .25rem; padding: 1rem; }
     .mrf-preview-frame { background: #fff; border: 1px solid #e3e6ea; border-radius: .25rem; padding: .75rem 1rem 1rem; max-width: 300px; margin: 0 auto; color: #525252; font-family: 'Open Sans', sans-serif; }
     .mrf-preview-title { display: flex; justify-content: space-between; align-items: center; font-size: 1rem; margin-bottom: .75rem; }
     .mrf-pv-inputs { display: flex; justify-content: space-between; margin-bottom: 1.1rem; }
@@ -40,15 +45,12 @@
     .mrf-pv-buttons span { display: flex; align-items: center; justify-content: center; min-height: 1.875rem; padding: .25rem .375rem; font-size: .875rem; font-weight: 600; line-height: 1.2; text-align: center; overflow-wrap: anywhere; border: 1px solid #707070; border-radius: .1875rem; }
     .mrf-pv-buttons span:nth-child(2) { background: #ffa54f; border-color: #ffa54f; color: #fff; }
     .mrf-pv-note { font-size: .75rem; color: #6c757d; text-align: center; margin-top: .75rem; }
-    .mrf-add-list { max-height: 18rem; overflow-y: auto; border: 1px solid #d6dbe1; border-radius: .25rem; }
-    .mrf-add-item { display: flex; gap: .75rem; align-items: flex-start; margin: 0; padding: .5rem .75rem; border-bottom: 1px solid #eef0f3; cursor: pointer; font-weight: 400; }
+    .mrf-add-list { max-height: 18rem; overflow-y: auto; border: 1px solid var(--border-color, #e4e9f2); border-radius: .25rem; }
+    .mrf-add-item { display: flex; gap: .75rem; align-items: flex-start; margin: 0; padding: .5rem .75rem; border-bottom: 1px solid var(--border-color, #e4e9f2); cursor: pointer; font-weight: 400; }
     .mrf-add-item:last-child { border-bottom: 0; }
-    .mrf-add-item:hover { background: #f5f7fa; }
+    .mrf-add-item:hover { background: var(--table-accent-color, #f5f7fa); }
     .mrf-add-item input { margin-top: .3rem; }
     .mrf-section-label { font-weight: 600; margin-bottom: .5rem; }
-    /* JTL-Theme zeigt „an“ nur als weißen Punkt auf transparentem Grund – hier klar in der Backend-Akzentfarbe */
-    .mrf-admin .custom-switch .custom-control-input:checked ~ .custom-control-label::before { background-color: #5cbcf6; border-color: #5cbcf6; }
-    .mrf-admin .mrf-state { display: block; font-size: .75rem; color: #6c757d; margin-top: .125rem; }
 </style>
 
 <div class="mrf-admin">
@@ -62,11 +64,8 @@
     {/if}
 
     <div class="card">
-        <div class="card-header d-flex align-items-center">
-            <div class="subheading1 mr-auto">Filter-Darstellung</div>
-            <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#mrf-add-modal"{if $mrfAvailable|count === 0} disabled{/if}>
-                <i class="fal fa-plus"></i> Merkmal hinzufügen
-            </button>
+        <div class="card-header">
+            <div class="subheading1">Filter-Darstellung</div>
         </div>
         <div class="card-body">
             <p class="text-muted mb-3">
@@ -75,12 +74,9 @@
                 im Shop erscheint dann wieder der normale Filter.
             </p>
             {if $mrfRows|count === 0}
-                <div class="mrf-empty text-muted">
-                    <span class="fal fa-sliders-h"></span>
-                    Noch keine Merkmale eingestellt.<br>
-                    <button type="button" class="btn btn-outline-primary btn-sm mt-3" data-toggle="modal" data-target="#mrf-add-modal">
-                        <i class="fal fa-plus"></i> Erstes Merkmal hinzufügen
-                    </button>
+                <div class="mrf-empty">
+                    <span class="mrf-empty-icon"><span class="fal fa-sliders-h"></span></span>
+                    Noch keine Merkmale eingestellt – unten über „Merkmal hinzufügen“ starten.
                 </div>
             {else}
                 <div class="table-responsive">
@@ -161,6 +157,15 @@
                     </table>
                 </div>
             {/if}
+        </div>
+        <div class="card-footer save-wrapper">
+            <div class="row">
+                <div class="ml-auto col-sm-6 col-xl-auto submit">
+                    <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#mrf-add-modal"{if $mrfAvailable|count === 0} disabled title="Alle Merkmale sind bereits eingestellt"{/if}>
+                        <i class="fa fa-plus"></i> Merkmal hinzufügen
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
