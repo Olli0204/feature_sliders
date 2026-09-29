@@ -99,7 +99,7 @@
                                         <form method="post" class="mrf-toggle-form">
                                             {$jtl_token}
                                             <input type="hidden" name="kPluginAdminMenu" value="{$mrfMenuID}">
-                                            <input type="hidden" name="mrf_action" value="toggle">
+                                            <input type="hidden" name="mrf_action" value="char_toggle">
                                             <input type="hidden" name="mrf_id" value="{$row.id}">
                                             <input type="hidden" name="mrf_active" value="{if $cfg->active}0{else}1{/if}">
                                             <div class="custom-control custom-switch d-inline-block" title="{if $cfg->active}Deaktivieren{else}Aktivieren{/if}">
@@ -140,7 +140,7 @@
                                             <form method="post" class="d-inline mrf-remove-form" data-name="{$row.name|escape:'html'}">
                                                 {$jtl_token}
                                                 <input type="hidden" name="kPluginAdminMenu" value="{$mrfMenuID}">
-                                                <input type="hidden" name="mrf_action" value="remove">
+                                                <input type="hidden" name="mrf_action" value="char_remove">
                                                 <input type="hidden" name="mrf_id" value="{$row.id}">
                                                 <button type="submit" class="btn btn-link px-2" title="Entfernen">
                                                     <span class="icon-hover">
@@ -177,7 +177,7 @@
                 <form method="post" class="modal-content mrf-config-form" data-preview="{$row.preview|escape:'html'}">
                     {$jtl_token}
                     <input type="hidden" name="kPluginAdminMenu" value="{$mrfMenuID}">
-                    <input type="hidden" name="mrf_action" value="save">
+                    <input type="hidden" name="mrf_action" value="char_save">
                     <input type="hidden" name="mrf_id" value="{$row.id}">
                     <div class="modal-header">
                         <h2 class="modal-title" id="mrf-edit-title-{$row.id}">{$row.name|escape:'html'} bearbeiten</h2>
@@ -296,7 +296,7 @@
             <form method="post" class="modal-content mrf-add-form">
                 {$jtl_token}
                 <input type="hidden" name="kPluginAdminMenu" value="{$mrfMenuID}">
-                <input type="hidden" name="mrf_action" value="save">
+                <input type="hidden" name="mrf_action" value="char_save">
                 <input type="hidden" name="mrf[expanded]" value="1">
                 <div class="modal-header">
                     <h2 class="modal-title" id="mrf-add-title">Merkmal hinzufügen</h2>
