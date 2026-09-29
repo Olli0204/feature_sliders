@@ -35,6 +35,23 @@ Schrittweite, Treffer-Logik und „Aufgeklappt“ als „Bereich auf Bereich“.
 
 Tab **Einstellungen**: „Filter aktiv“ (alle Regler an/aus) und das URL-Parameter-Präfix.
 
+## Filtergruppen
+
+Tab **Filtergruppen**: Eine Gruppe (z. B. „Snowboards“: Länge, Körpergewicht, Fahrlevel …) legt fest, welche Merkmale in
+den zugewiesenen Kategorien als Filter erscheinen – in genau der Reihenfolge der Gruppe (Ziehen oder ↑↓).
+
+- Gilt nur für die gewählten Kategorien, **nicht** für Unterkategorien.
+- Mehrere Gruppen an einer Kategorie: Merkmale in der Reihenfolge der Gruppen-Liste (per Ziehen sortierbar), doppelte
+  Merkmale einmal.
+- Eine Gruppe ohne Merkmale blendet den Merkmalfilter in ihren Kategorien aus.
+- Kategorien ohne Gruppe, Suche und Herstellerseiten verhalten sich wie bisher (Wawi-Funktionsattribut
+  „merkmalfilter“ oder alle Merkmale).
+- Vorrang vor der Wawi: Hat eine Kategorie mit Gruppe noch das Funktionsattribut „merkmalfilter“ (oder ist
+  „Maximale Anzahl Merkmale“ begrenzt), lädt das Plugin die Merkmal-Liste ohne diese Beschränkungen neu und filtert dann
+  selbst (`Filter/GroupRestriction.php`). Der Tab listet alle Kategorien mit Funktionsattribut und zeigt, wo es
+  entfernt werden kann.
+- Regler und Boxen funktionieren in Gruppen wie gewohnt; ein Regler-Merkmal außerhalb der Gruppe wird nicht angezeigt.
+
 ## Boxen-Darstellung
 
 Die Werte erscheinen als gleich breite Kacheln im Raster statt als Checkliste, ohne Trefferanzahl. Links,
@@ -97,11 +114,16 @@ Mehrheit der Werte dieselbe Einheit hinter der Zahl trägt (`kg`, `cm`, `%`, `Zo
 | `Filter/RangeParser.php` | Parser für Bereiche/Einzelwerte, Einheitenerkennung, Treffer-Logik (ohne Shop-Abhängigkeiten) |
 | `Filter/CharacteristicConfig.php` | Darstellung eines Merkmals (aktiv, Typ, Treffer-Logik, Einheit, Schrittweite, aufgeklappt, Boxen pro Zeile) |
 | `Filter/ConfigRepository.php` | Tabelle `feature_sliders_characteristic` lesen/schreiben (gecacht, Plugin-Cache-Gruppe) |
+| `Filter/GroupRepository.php` | Filtergruppen (Tabellen `feature_sliders_group`, `…_group_characteristic`, `…_group_category`), erlaubte Merkmale je Kategorie |
+| `Filter/GroupRestriction.php` | begrenzt/sortiert den Merkmalfilter einer Kategorie auf ihre Gruppen, überstimmt das Wawi-Attribut |
+| `Admin/GroupsAdmin.php` | Tab „Filtergruppen“: anlegen/bearbeiten/löschen/sortieren (CSRF), Kategoriebaum, Wawi-Attribut-Übersicht |
 | `Filter/Settings.php` | globale Einstellungen (aktiv, URL-Präfix) |
 | `Migrations/Migration20260928120000.php` | Tabelle anlegen, Einstellungen aus 1.1.x übernehmen |
 | `Migrations/Migration20260928160000.php` | Spalten `active` und `button_columns` (1.4.0) |
 | `adminmenu/templates/characteristics.tpl` | Tab „Merkmale“: Übersicht, Hinzufügen-/Bearbeiten-Dialog mit Live-Vorschau |
 | `adminmenu/templates/display_tiles.tpl` | Auswahlkacheln für die Darstellung |
+| `adminmenu/templates/groups.tpl`, `group_form.tpl` | Tab „Filtergruppen“ mit Drag & Drop (ohne Fremdbibliothek) |
+| `Migrations/Migration20260929120000.php` | Tabellen für die Filtergruppen (1.5.0) |
 | `frontend/template/boxes/box_filter_characteristics.tpl` | Block-Override Merkmalfilter Seitenleiste |
 | `frontend/template/snippets/filter/mobile.tpl` | Block-Override Merkmalfilter im Filter-Dialog |
 | `frontend/tpl/slider.tpl` | Regler-Markup (NOVA-Preisfilter) |

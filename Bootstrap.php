@@ -11,7 +11,10 @@ use JTL\Plugin\Bootstrapper;
 use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
 use Plugin\feature_sliders\Admin\CharacteristicsAdmin;
+use Plugin\feature_sliders\Admin\GroupsAdmin;
 use Plugin\feature_sliders\Filter\ConfigRepository;
+use Plugin\feature_sliders\Filter\GroupRepository;
+use Plugin\feature_sliders\Filter\GroupRestriction;
 use Plugin\feature_sliders\Filter\RangeFilter;
 use Plugin\feature_sliders\Filter\Settings;
 
@@ -44,6 +47,11 @@ class Bootstrap extends Bootstrapper
         return new ConfigRepository($this->getDB(), $this->getCache(), $this->getPlugin()->getCache()->getGroup());
     }
 
+    private function getGroupRepository(): GroupRepository
+    {
+        return new GroupRepository($this->getDB(), $this->getCache(), $this->getPlugin()->getCache()->getGroup());
+    }
+
     /**
      * Runs after the search results are built and before the boxes are rendered: hands the
      * slider data to Smarty ($mrfSliders, keyed by kMerkmal) and makes sure each characteristic
@@ -58,14 +66,27 @@ class Bootstrap extends Bootstrapper
             'from' => $l10n->getTranslation('mrf_from') ?? 'Von',
             'to'   => $l10n->getTranslation('mrf_to') ?? 'Bis',
         ];
+        $restriction   = new GroupRestriction($this->getGroupRepository(), $this->getDB());
+        // null = no filter group assigned to this category → core behaviour (Wawi attribute or all)
+        $allowed       = $restriction->apply($productFilter);
         $sliders       = [];
         foreach ($productFilter->getAvailableFilters() as $filter) {
-            if (!$filter instanceof RangeFilter || ($slider = $filter->getSliderData()) === null) {
+            if (!$filter instanceof RangeFilter) {
+                continue;
+            }
+            if ($allowed !== null && !\in_array($filter->getCharacteristicID(), $allowed, true)) {
+                continue;
+            }
+            if (($slider = $filter->getSliderData()) === null) {
                 continue;
             }
             $slider['labels']                     = $labels;
             $sliders[$filter->getCharacteristicID()] = $slider;
             $this->placeInCharacteristicFilter($productFilter, $filter);
+        }
+        if ($allowed !== null) {
+            // slider placeholders are appended – bring everything into group order
+            $restriction->sort($productFilter, $allowed);
         }
         if (\count($sliders) > 0) {
             Shop::Smarty()->assign('mrfSliders', $sliders);
@@ -206,6 +227,11 @@ class Bootstrap extends Bootstrapper
      */
     public function renderAdminMenuTab(string $tabName, int $menuID, JTLSmarty $smarty): string
     {
+        if ($tabName === 'Filtergruppen') {
+            return (new GroupsAdmin($this->getPlugin(), $this->getDB(), $this->getGroupRepository()))
+                ->render($menuID, $smarty);
+        }
+
         return (new CharacteristicsAdmin($this->getPlugin(), $this->getDB(), $this->getRepository()))
             ->render($menuID, $smarty);
     }
