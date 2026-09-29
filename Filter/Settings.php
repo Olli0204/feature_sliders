@@ -12,11 +12,14 @@ use JTL\Plugin\PluginInterface;
  */
 final class Settings
 {
+    /** URL parameter per slider: "mrf<kMerkmal>=<from>_<to>" (fixed; changing it would break existing filter links) */
+    public const URL_PARAM_PREFIX = 'mrf';
+
     private static ?self $current = null;
 
     public function __construct(
         public readonly bool $active,
-        public readonly string $urlParamPrefix = 'mrf',
+        public readonly string $urlParamPrefix = self::URL_PARAM_PREFIX,
         public readonly string $pluginVersion = '',
         public readonly string $frontendPath = '',
         public readonly string $cacheGroup = ''
@@ -26,11 +29,10 @@ final class Settings
     public static function fromPlugin(PluginInterface $plugin): self
     {
         $config = $plugin->getConfig();
-        $prefix = \strtolower((string)$config->getValue('mrf_url_param'));
 
         return new self(
             (string)$config->getValue('mrf_active') === 'on',
-            \preg_match('/^[a-z][a-z_]{1,15}$/', $prefix) ? $prefix : 'mrf',
+            self::URL_PARAM_PREFIX,
             (string)$plugin->getMeta()->getVersion(),
             $plugin->getPaths()->getFrontendPath(),
             $plugin->getCache()->getGroup()
