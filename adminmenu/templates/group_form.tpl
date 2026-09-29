@@ -26,7 +26,7 @@
 
         <div class="row">
             <div class="col-lg-6">
-                <div class="mrf-section-label">Merkmale im Filter <span class="text-muted font-weight-normal">– Reihenfolge per Ziehen</span></div>
+                <div class="mrf-section-label">Merkmale im Filter <span class="mrf-hint">– Reihenfolge per Ziehen</span></div>
                 <ol class="mrf-sortable mrf-selected-list" data-empty="Noch keine Merkmale – rechts hinzufügen.">
                     {foreach $mrfSelectedChars as $cid}
                         {if isset($mrfCharacteristics[$cid])}
@@ -34,7 +34,7 @@
                             <li class="mrf-sort-item" draggable="true" data-id="{$char.id}">
                                 <span class="mrf-handle fal fa-grip-vertical" aria-hidden="true"></span>
                                 <span class="mrf-sort-name">{$char.name|escape:'html'}</span>
-                                {if $char.display !== ''}<span class="badge badge-light">{$char.display}</span>{/if}
+                                {if $char.display !== ''}<span class="badge mrf-badge-other">{$char.display}</span>{/if}
                                 <span class="mrf-sort-actions">
                                     <button type="button" class="btn btn-link btn-sm p-0 mrf-move" data-dir="-1" title="Nach oben"><span class="fal fa-chevron-up"></span></button>
                                     <button type="button" class="btn btn-link btn-sm p-0 mrf-move" data-dir="1" title="Nach unten"><span class="fal fa-chevron-down"></span></button>
@@ -54,9 +54,9 @@
                         <button type="button" class="mrf-pick-item mrf-add-char{if in_array($char.id, $mrfSelectedChars)} d-none{/if}"
                                 data-id="{$char.id}" data-name="{$char.name|escape:'html'}" data-display="{$char.display}"
                                 data-search="{$char.name|lower|escape:'html'}">
-                            <span class="fal fa-plus text-muted"></span>
+                            <span class="fal fa-plus mrf-plus"></span>
                             {$char.name|escape:'html'}
-                            {if $char.display !== ''}<span class="badge badge-light">{$char.display}</span>{/if}
+                            {if $char.display !== ''}<span class="badge mrf-badge-other">{$char.display}</span>{/if}
                         </button>
                     {/foreach}
                 </div>
@@ -64,7 +64,7 @@
         </div>
 
         <div class="mrf-section-label mt-4 d-flex align-items-center">
-            <span class="mr-auto">Kategorien <span class="text-muted font-weight-normal">– gilt nur für genau diese Kategorien, nicht für Unterkategorien</span></span>
+            <span class="mr-auto">Kategorien <span class="mrf-hint">– gilt nur für genau diese Kategorien, nicht für Unterkategorien</span></span>
             <span class="badge badge-primary mrf-cat-count">0</span>
         </div>
         <div class="d-flex mb-2">
@@ -85,8 +85,8 @@
                 <label class="mrf-cat-item" style="padding-left: {$cat.level * 1.25 + 0.75}rem;" data-search="{$cat.path|lower|escape:'html'}">
                     <input type="checkbox" name="mrf_group_categories[]" value="{$cat.id}"{if in_array($cat.id, $mrfSelectedCats)} checked{/if}>
                     <span class="mrf-cat-name">{$cat.name|escape:'html'}</span>
-                    <span class="mrf-cat-path text-muted d-none">{$cat.path|escape:'html'}</span>
-                    {if $otherGroups|count > 0}<span class="badge badge-light" title="Weitere Filtergruppe an dieser Kategorie">auch: {foreach $otherGroups as $otherName}{if !$otherName@first}, {/if}{$otherName|escape:'html'}{/foreach}</span>{/if}
+                    <span class="mrf-cat-path d-none">{$cat.path|escape:'html'}</span>
+                    {if $otherGroups|count > 0}<span class="badge mrf-badge-other" title="Weitere Filtergruppe an dieser Kategorie">auch: {foreach $otherGroups as $otherName}{if !$otherName@first}, {/if}{$otherName|escape:'html'}{/foreach}</span>{/if}
                     {if $cat.wawiAttribute !== ''}<span class="badge badge-warning" title="Wawi-Funktionsattribut merkmalfilter: {$cat.wawiAttribute|escape:'html'}">Wawi-Attribut</span>{/if}
                 </label>
             {foreachelse}
