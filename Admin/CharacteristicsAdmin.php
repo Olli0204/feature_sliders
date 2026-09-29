@@ -28,6 +28,9 @@ final class CharacteristicsAdmin
         CharacteristicConfig::DISPLAY_BUTTONS       => 'Boxen',
     ];
 
+    /** POST actions of this tab (mrf_action) */
+    public const ACTIONS = ['char_save', 'char_toggle', 'char_remove'];
+
     public const MODE_LABELS = [
         RangeParser::MODE_OVERLAP  => 'Bereiche überschneiden sich',
         RangeParser::MODE_CONTAINS => 'Artikel-Bereich enthält die Auswahl',
@@ -79,8 +82,10 @@ final class CharacteristicsAdmin
      */
     private function handlePost(array $characteristics): array
     {
+        // JTL renders every plugin tab on each request, so a POST of the "Filtergruppen" tab reaches this
+        // tab as well – only react to our own actions
         $action = (string)Request::postVar('mrf_action', '');
-        if ($action === '') {
+        if (!\in_array($action, self::ACTIONS, true)) {
             return [null, 0];
         }
         if (!($this->tokenValidator)()) {
@@ -93,7 +98,7 @@ final class CharacteristicsAdmin
         }
         $existing = $this->repository->get($id);
         switch ($action) {
-            case 'save':
+            case 'char_save':
                 $data   = Request::postVar('mrf', []);
                 $config = CharacteristicConfig::fromArray($id, \is_array($data) ? $data : [])
                     ->withActive($existing?->active ?? true);
@@ -107,7 +112,7 @@ final class CharacteristicsAdmin
                     // after adding, open the edit dialog so the preview and value check are visible right away
                     $existing === null ? $id : 0,
                 ];
-            case 'toggle':
+            case 'char_toggle':
                 if ($existing === null) {
                     return [null, 0];
                 }
@@ -120,7 +125,7 @@ final class CharacteristicsAdmin
                         ? 'aktiviert.'
                         : 'deaktiviert – im Shop erscheint wieder der normale Merkmalfilter.'),
                 ], 0];
-            case 'remove':
+            case 'char_remove':
                 $this->repository->remove($id);
 
                 return [['type' => 'success', 'text' => '„' . $name . '“ entfernt – im Shop erscheint wieder der normale Merkmalfilter.'], 0];

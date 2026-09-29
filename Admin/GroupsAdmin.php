@@ -17,6 +17,9 @@ use Plugin\feature_sliders\Filter\GroupRepository;
  */
 final class GroupsAdmin
 {
+    /** POST actions of this tab (mrf_action) */
+    public const ACTIONS = ['group_save', 'group_remove', 'group_reorder'];
+
     /** @var \Closure(): bool */
     private readonly \Closure $tokenValidator;
 
@@ -81,8 +84,9 @@ final class GroupsAdmin
      */
     private function handlePost(array $characteristics, array $categories): array
     {
+        // JTL renders every plugin tab on each request – only react to this tab's own actions
         $action = (string)Request::postVar('mrf_action', '');
-        if ($action === '') {
+        if (!\in_array($action, self::ACTIONS, true)) {
             return [null, 0];
         }
         if (!($this->tokenValidator)()) {
