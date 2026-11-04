@@ -94,6 +94,12 @@ halbfett und zentriert, eingerückt wie der Preisregler, ausgewählte Werte in d
   JTL-Kundencenter unter JTL-Search → Verwaltung → Filtermöglichkeiten eingestellt.
   URL-Format wie jtl_search 1.24.0: `/?suchausdruck=<Suche>&fq0=<Feld>:<Wert>` (Wert ISO-8859-1-kodiert),
   Regler `fqN=<Feld>:<von>_<bis>-<a>_<b>`.
+- Reiter „JTL Search“ (seit 1.7.0, Tabelle `feature_sliders_jtlsearch`): Jede Filtergruppe, die JTL Search im Shop
+  liefert, trägt das Frontend selbst ein (`JtlSearchConfigRepository::record()`, schreibt nur bei neuen Gruppen,
+  geändertem JTL-Titel/-Typ oder einmal täglich „zuletzt gesehen“). Je Gruppe: anzeigen ja/nein, Titel, Darstellung
+  (wie JTL Search / Checkliste / Boxen; Regler-Gruppen bleiben Regler), Einheit und Schrittweite für Regler (JTL
+  Search akzeptiert beliebige Zwischenwerte, z. B. `154_154`), aufgeklappt, Reihenfolge per Ziehen. Regler gibt es
+  nur für Zahlenfelder von JTL Search (`attr_num_…`, Merkmalwerte ohne Einheit in der Wawi, z. B. Brettlänge „154“).
 
 ### Erkannte Schreibweisen
 

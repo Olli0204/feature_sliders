@@ -42,8 +42,15 @@ final class JtlSearchFilters
 
     private bool $prepared = false;
 
-    public function __construct(private readonly string $frontendPath)
-    {
+    /**
+     * @param array<string, array<string, mixed>> $configs backend tab "JTL Search", keyed by field name
+     *                                                     (JtlSearchConfigRepository::getAll())
+     */
+    public function __construct(
+        private readonly string $frontendPath,
+        private readonly array $configs = [],
+        private readonly ?JtlSearchConfigRepository $repository = null
+    ) {
     }
 
     /**
@@ -70,22 +77,33 @@ final class JtlSearchFilters
         $this->entries = self::requestEntries($_GET);
 
         $options = [];
+        $order   = [];
         $sliders = [];
         $buttons = [];
         $active  = [];
+        $seen    = [];
         foreach (\array_values($groups) as $index => $group) {
             if (!$group instanceof stdClass || !\is_array($group->oFilterItem_arr ?? null)) {
                 continue;
             }
             $id    = self::ID_OFFSET + $index;
             $name  = (string)($group->cName ?? '');
+            $type  = (int)($group->nType ?? 1);
             $title = self::plain((string)($group->cMapping ?? $name));
             if (!\preg_match('/^' . self::GROUP_PATTERN . '$/', $name) || \count($group->oFilterItem_arr) === 0) {
                 continue;
             }
+            $seen[$name] = ['title' => $title, 'type' => $type];
+            $config      = $this->configs[$name] ?? null;
+            if ($config !== null && !$config['active']) {
+                continue;
+            }
+            if ($config !== null && $config['title'] !== '') {
+                $title = $config['title'];
+            }
             $option = $this->createGroup($id, $title);
-            if ((int)($group->nType ?? 1) === self::TYPE_SLIDER) {
-                $slider = $this->sliderData($group, $name, $labels);
+            if ($type === self::TYPE_SLIDER) {
+                $slider = $this->sliderData($group, $name, $labels, $config);
                 if ($slider === null) {
                     continue;
                 }
@@ -128,7 +146,11 @@ final class JtlSearchFilters
                 if (\count($values) === 0) {
                     continue;
                 }
-                if ((int)($group->nType ?? 1) === self::TYPE_TINYBOX) {
+                $display = $config['display'] ?? JtlSearchConfigRepository::DISPLAY_AUTO;
+                if (
+                    $display === JtlSearchConfigRepository::DISPLAY_BUTTONS
+                    || ($display === JtlSearchConfigRepository::DISPLAY_AUTO && $type === self::TYPE_TINYBOX)
+                ) {
                     $buttons[$id] = [
                         'characteristicID' => $id,
                         'columns'          => \Plugin\feature_sliders\Bootstrap::buttonColumns($values),
@@ -136,11 +158,21 @@ final class JtlSearchFilters
                     ];
                 }
             }
+            if ($config !== null && $config['expanded']) {
+                $option->setIsActive(true);
+            }
             $options[] = $option;
+            // configured order (backend tab "JTL Search"); groups not recorded yet keep JTL's order at the end
+            $order[] = $config !== null ? $config['sort'] : 1000000 + $index;
         }
+        $this->repository?->record($seen);
         if (\count($options) === 0) {
             return null;
         }
+        // stable sort by configured position (array_multisort would compare the option objects on ties)
+        $positions = \array_keys($options);
+        \usort($positions, static fn(int $a, int $b): int => [$order[$a], $a] <=> [$order[$b], $b]);
+        $options = \array_map(static fn(int $i): CharacteristicOption => $options[$i], $positions);
         $results    = $productFilter->getSearchResults();
         $collection = $productFilter->getCharacteristicFilterCollection();
         $results->setCharacteristicFilterOptions($options);
@@ -292,9 +324,10 @@ final class JtlSearchFilters
 
     /**
      * @param array{from: string, to: string} $labels
+     * @param array<string, mixed>|null       $config unit/step from the backend tab override JTL Search's
      * @return array<string, mixed>|null
      */
-    private function sliderData(stdClass $group, string $name, array $labels): ?array
+    private function sliderData(stdClass $group, string $name, array $labels, ?array $config = null): ?array
     {
         $item = $group->oFilterItem_arr[0] ?? null;
         if (!\is_object($item)) {
@@ -302,7 +335,7 @@ final class JtlSearchFilters
         }
         $min  = self::number($item->fFrom ?? null);
         $max  = self::number($item->fTo ?? null);
-        $step = self::number($item->fStep ?? null);
+        $step = ($config['step'] ?? 0) > 0 ? (float)$config['step'] : self::number($item->fStep ?? null);
         if ($min === null || $max === null || $max <= $min) {
             return null;
         }
@@ -322,7 +355,7 @@ final class JtlSearchFilters
             'from'    => self::numberString(\max($min, \min($from, $max))),
             'to'      => self::numberString(\max($min, \min($to, $max))),
             'step'    => self::numberString($step !== null && $step > 0 ? $step : 1),
-            'unit'    => self::plain((string)($item->cUnit ?? '')),
+            'unit'    => ($config['unit'] ?? '') !== '' ? $config['unit'] : self::plain((string)($item->cUnit ?? '')),
             'labels'  => $labels,
             'active'  => $isActive,
         ];
