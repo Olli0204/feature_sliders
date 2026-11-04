@@ -203,6 +203,59 @@ final class JtlSearchConfigRepository
     }
 
     /**
+     * Backend dialog: saves the editable fields of one group (order stays).
+     *
+     * @param array<string, mixed> $row normalized row
+     */
+    public function saveOne(array $row): void
+    {
+        $this->db->queryPrepared(
+            'UPDATE ' . self::TABLE . ' SET title = :title, titles = :titles, display = :display, unit = :unit,
+                step = :step, expanded = :expanded WHERE jtl_name = :name',
+            [
+                'name'     => $row['name'],
+                'title'    => $row['title'],
+                'titles'   => \count($row['titles']) > 0 ? \json_encode($row['titles'], \JSON_UNESCAPED_UNICODE) : null,
+                'display'  => $row['display'],
+                'unit'     => $row['unit'],
+                'step'     => $row['step'],
+                'expanded' => $row['expanded'] ? 1 : 0,
+            ]
+        );
+        $this->flush();
+    }
+
+    public function setActive(string $name, bool $active): void
+    {
+        $this->db->queryPrepared(
+            'UPDATE ' . self::TABLE . ' SET active = :active WHERE jtl_name = :name',
+            ['name' => $name, 'active' => $active ? 1 : 0]
+        );
+        $this->flush();
+    }
+
+    /**
+     * @param string[] $names new order; groups not listed keep their place behind the listed ones
+     */
+    public function reorder(array $names): void
+    {
+        $known = $this->getAll();
+        $order = \array_values(\array_unique(\array_filter($names, static fn($n): bool => isset($known[$n]))));
+        foreach (\array_keys($known) as $name) {
+            if (!\in_array($name, $order, true)) {
+                $order[] = $name;
+            }
+        }
+        foreach ($order as $i => $name) {
+            $this->db->queryPrepared(
+                'UPDATE ' . self::TABLE . ' SET sort = :sort WHERE jtl_name = :name',
+                ['name' => $name, 'sort' => $i + 1]
+            );
+        }
+        $this->flush();
+    }
+
+    /**
      * Title for the shop language: own title of that language, for the default language the main title field,
      * otherwise JTL Search's own (language-specific) title.
      *

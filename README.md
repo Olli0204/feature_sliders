@@ -103,6 +103,10 @@ halbfett und zentriert, eingerückt wie der Preisregler, ausgewählte Werte in d
   Seit 1.7.1 Titel je Shop-Sprache (`title` = Standardsprache, `titles` = JSON der übrigen Sprachen; leer = Titel,
   den JTL Search in dieser Sprache liefert) und Anzeige, in welchen Sprachen JTL Search die Gruppe geliefert hat
   (`langs`) – im Englischen liefert JTL Search teils eigene Gruppen (z. B. `attr_num_length`, `attr_num_size`).
+  Oberfläche seit 1.7.2 wie der Reiter „Merkmale“: kompakte Übersicht (Schalter `jtl_toggle` und Ziehen
+  `jtl_reorder` speichern sofort), Bearbeiten im Dialog (`jtl_edit`: Titel je Sprache, Darstellungs-Kacheln bzw.
+  Einheit/Schrittweite mit Regler-Vorschau, aufgeklappt, technische Angaben), Abschnitte „Ausgeblendet“ und
+  „Nicht mehr geliefert“ (> 14 Tage, nur dort „Aus Liste entfernen“), Suchfeld ab 7 Gruppen, Testsuche im Shop.
 
 ### Erkannte Schreibweisen
 
