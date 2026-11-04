@@ -81,10 +81,19 @@ halbfett und zentriert, eingerückt wie der Preisregler, ausgewählte Werte in d
   Platzhalter ein, damit der Regler erreichbar bleibt.
 - Optik: exakt das Markup des NOVA-Preisfilters, daher greifen die Theme-Regeln 1:1. Zurückgesetzt wird wie beim
   Preisfilter über die aktiven Filter oder indem man den Regler wieder ganz aufzieht.
-- Suchseite mit JTL Search (seit 1.5.5): Übernimmt das Plugin JTL Search die Suche, liefert dessen Server die
-  Trefferliste (nur die aktuelle Seite) und filtert selbst – Shop-Filter erreichen ihn nicht. Das Plugin blendet
-  dort deshalb keine Regler/Boxen ein; die Filter kommen aus der Box „Filter (JTL Search)“ (Artikelübersicht,
-  linke Seitenleiste) und werden im JTL-Kundencenter unter JTL-Search → Verwaltung → Filtermöglichkeiten eingestellt.
+- Suchseite mit JTL Search: JTL Search liefert die Trefferliste (nur die aktuelle Seite) und filtert auf seinem
+  Server – Shop-Filter (auch die Regler dieses Plugins) erreichen ihn nicht, der Core schaltet seine Filter dort ab.
+  Seit 1.6.0 (Einstellung „JTL-Search-Filter im Shop-Design“, Standard an) wandelt `Filter/JtlSearchFilters.php`
+  die Filtergruppen aus der JTL-Search-Antwort in Merkmalfilter-Optionen um (IDs ab 990000): NOVA zeigt sie im
+  normalen Merkmalfilter (Seitenleiste) und im Filter-Dialog auf dem Handy (`tpl/jtl_mobile.tpl`, Filter-Knopf über
+  `template/productlist/result_options.tpl`), Regler-Gruppen mit dem Regler dieses Plugins, Tinybox-Gruppen als Boxen,
+  gesetzte Filter als „Aktive Filter“ (`template/snippets/filter/active_filter.tpl`). Blättern, Sortieren und
+  „Artikel pro Seite“ behalten die Filter (`HOOK_FILTER_ENDE`, hängt `fq0…` an). Die Box „Filter (JTL Search)“
+  bleibt dabei leer. **Zurück:** Einstellung ausschalten – dann zeigt wieder die Box „Filter (JTL Search)“
+  (Artikelübersicht, linke Seitenleiste) die Filter. Welche Filter JTL Search liefert und wie sie heißen, wird im
+  JTL-Kundencenter unter JTL-Search → Verwaltung → Filtermöglichkeiten eingestellt.
+  URL-Format wie jtl_search 1.24.0: `/?suchausdruck=<Suche>&fq0=<Feld>:<Wert>` (Wert ISO-8859-1-kodiert),
+  Regler `fqN=<Feld>:<von>_<bis>-<a>_<b>`.
 
 ### Erkannte Schreibweisen
 

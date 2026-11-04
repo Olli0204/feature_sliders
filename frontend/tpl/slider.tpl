@@ -1,5 +1,6 @@
 {* Schieberegler im Original-Markup von NOVA snippets/filter/price_slider.tpl (price-range-inputs, col-5,
-   input-group-prepend), damit die NOVA-Theme-Regeln greifen. Bewusst ohne die Klasse "price-range-input":
+   input-group-prepend), damit die NOVA-Theme-Regeln greifen.
+   data-mrf-prefix (JTL-Search-Regler): wird dem Wert vorangestellt, z. B. fq1=attr_num_x:35_48-40_42. Bewusst ohne die Klasse "price-range-input":
    an die hängt NOVA den Preisfilter-Redirect (?pf=). Daten kommen fertig aus RangeFilter::getSliderData(). *}
 <div class="mrf-slider js-mrf-slider"
      data-mrf-param="{$mrfSlider.param|escape:'html'}"
@@ -8,7 +9,8 @@
      data-mrf-max="{$mrfSlider.max|escape:'html'}"
      data-mrf-from="{$mrfSlider.from|escape:'html'}"
      data-mrf-to="{$mrfSlider.to|escape:'html'}"
-     data-mrf-step="{$mrfSlider.step|escape:'html'}">
+     data-mrf-step="{$mrfSlider.step|escape:'html'}"{if !empty($mrfSlider.prefix)}
+     data-mrf-prefix="{$mrfSlider.prefix|escape:'html'}"{/if}>
     <div class="row price-range-inputs no-gutters">
         <div class="col col-5">
             <div class="input-group" role="group">

@@ -53,6 +53,7 @@
         var to      = parseFloat(root.getAttribute('data-mrf-to'));
         var step    = parseFloat(root.getAttribute('data-mrf-step')) || 1;
         var param   = root.getAttribute('data-mrf-param');
+        var prefix  = root.getAttribute('data-mrf-prefix') || '';
         var baseUrl = (root.getAttribute('data-mrf-url') || window.location.href).replace(/&amp;/g, '&');
         var digits  = decimalsOf(root.getAttribute('data-mrf-step'));
         if (!track || !inFrom || !inTo || isNaN(min) || isNaN(max) || max <= min) {
@@ -83,7 +84,7 @@
                 return;
             }
             var full = lo <= min && hi >= max;
-            navigate(root, buildUrl(baseUrl, param, full ? null : format.to(lo) + '_' + format.to(hi)));
+            navigate(root, buildUrl(baseUrl, param, full ? null : prefix + format.to(lo) + '_' + format.to(hi)));
         }
 
         track.noUiSlider.on('update', function (values) {
