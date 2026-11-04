@@ -81,6 +81,10 @@ halbfett und zentriert, eingerückt wie der Preisregler, ausgewählte Werte in d
   Platzhalter ein, damit der Regler erreichbar bleibt.
 - Optik: exakt das Markup des NOVA-Preisfilters, daher greifen die Theme-Regeln 1:1. Zurückgesetzt wird wie beim
   Preisfilter über die aktiven Filter oder indem man den Regler wieder ganz aufzieht.
+- Suchseite mit JTL Search (seit 1.5.5): Übernimmt das Plugin JTL Search die Suche, liefert dessen Server die
+  Trefferliste (nur die aktuelle Seite) und filtert selbst – Shop-Filter erreichen ihn nicht. Das Plugin blendet
+  dort deshalb keine Regler/Boxen ein; die Filter kommen aus der Box „Filter (JTL Search)“ (Artikelübersicht,
+  linke Seitenleiste) und werden im JTL-Kundencenter unter JTL-Search → Verwaltung → Filtermöglichkeiten eingestellt.
 
 ### Erkannte Schreibweisen
 

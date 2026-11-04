@@ -61,6 +61,11 @@ class Bootstrap extends Bootstrapper
     private function prepareListing(): void
     {
         $productFilter = Shop::getProductFilter();
+        if ($productFilter->isExtendedJTLSearch()) {
+            // JTL Search delivers the result list itself (only the current page, filtered on its
+            // server) – core filter SQL never reaches it, so sliders/buttons would not filter there.
+            return;
+        }
         $l10n          = $this->getPlugin()->getLocalization();
         $labels        = [
             'from' => $l10n->getTranslation('mrf_from') ?? 'Von',
