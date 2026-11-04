@@ -12,9 +12,11 @@ use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
 use Plugin\feature_sliders\Admin\CharacteristicsAdmin;
 use Plugin\feature_sliders\Admin\GroupsAdmin;
+use Plugin\feature_sliders\Admin\JtlSearchAdmin;
 use Plugin\feature_sliders\Filter\ConfigRepository;
 use Plugin\feature_sliders\Filter\GroupRepository;
 use Plugin\feature_sliders\Filter\GroupRestriction;
+use Plugin\feature_sliders\Filter\JtlSearchConfigRepository;
 use Plugin\feature_sliders\Filter\JtlSearchFilters;
 use Plugin\feature_sliders\Filter\RangeFilter;
 use Plugin\feature_sliders\Filter\Settings;
@@ -53,6 +55,15 @@ class Bootstrap extends Bootstrapper
     private function getRepository(): ConfigRepository
     {
         return new ConfigRepository($this->getDB(), $this->getCache(), $this->getPlugin()->getCache()->getGroup());
+    }
+
+    private function getJtlSearchRepository(): JtlSearchConfigRepository
+    {
+        return new JtlSearchConfigRepository(
+            $this->getDB(),
+            $this->getCache(),
+            $this->getPlugin()->getCache()->getGroup()
+        );
     }
 
     private function getGroupRepository(): GroupRepository
@@ -120,7 +131,12 @@ class Bootstrap extends Bootstrapper
         if (!(Settings::get()?->jtlSearchFilters ?? false)) {
             return;
         }
-        $this->jtlSearchFilters = new JtlSearchFilters($this->getPlugin()->getPaths()->getFrontendPath());
+        $repository             = $this->getJtlSearchRepository();
+        $this->jtlSearchFilters = new JtlSearchFilters(
+            $this->getPlugin()->getPaths()->getFrontendPath(),
+            $repository->getAll(),
+            $repository
+        );
         $data                   = $this->jtlSearchFilters->prepare($productFilter, Shop::Smarty(), $labels);
         if ($data === null) {
             $this->jtlSearchFilters = null;
@@ -268,6 +284,9 @@ class Bootstrap extends Bootstrapper
      */
     public function renderAdminMenuTab(string $tabName, int $menuID, JTLSmarty $smarty): string
     {
+        if ($tabName === 'JTL Search') {
+            return (new JtlSearchAdmin($this->getPlugin(), $this->getJtlSearchRepository()))->render($menuID, $smarty);
+        }
         if ($tabName === 'Filtergruppen') {
             return (new GroupsAdmin($this->getPlugin(), $this->getDB(), $this->getGroupRepository()))
                 ->render($menuID, $smarty);
