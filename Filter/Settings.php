@@ -22,7 +22,9 @@ final class Settings
         public readonly string $urlParamPrefix = self::URL_PARAM_PREFIX,
         public readonly string $pluginVersion = '',
         public readonly string $frontendPath = '',
-        public readonly string $cacheGroup = ''
+        public readonly string $cacheGroup = '',
+        /** search page with JTL Search: show its filters in NOVA markup (JtlSearchFilters); off = JTL's own box */
+        public readonly bool $jtlSearchFilters = false
     ) {
     }
 
@@ -35,7 +37,8 @@ final class Settings
             self::URL_PARAM_PREFIX,
             (string)$plugin->getMeta()->getVersion(),
             $plugin->getPaths()->getFrontendPath(),
-            $plugin->getCache()->getGroup()
+            $plugin->getCache()->getGroup(),
+            (string)$config->getValue('mrf_jtlsearch') === 'on'
         );
     }
 

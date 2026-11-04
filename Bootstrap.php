@@ -15,11 +15,15 @@ use Plugin\feature_sliders\Admin\GroupsAdmin;
 use Plugin\feature_sliders\Filter\ConfigRepository;
 use Plugin\feature_sliders\Filter\GroupRepository;
 use Plugin\feature_sliders\Filter\GroupRestriction;
+use Plugin\feature_sliders\Filter\JtlSearchFilters;
 use Plugin\feature_sliders\Filter\RangeFilter;
 use Plugin\feature_sliders\Filter\Settings;
 
 class Bootstrap extends Bootstrapper
 {
+    /** set while the current request is a JTL Search result page shown with NOVA filters */
+    private ?JtlSearchFilters $jtlSearchFilters = null;
+
     public function boot(Dispatcher $dispatcher): void
     {
         parent::boot($dispatcher);
@@ -39,6 +43,10 @@ class Bootstrap extends Bootstrapper
         });
         $dispatcher->hookInto(\HOOK_FILTER_PAGE, function (): void {
             $this->prepareListing();
+        });
+        $dispatcher->hookInto(\HOOK_FILTER_ENDE, function (): void {
+            // after jtl_search rebuilt the sorting options (HOOK_FILTER_PAGE), before the list is rendered
+            $this->jtlSearchFilters?->keepFiltersInLinks(Shop::getProductFilter(), Shop::Smarty());
         });
     }
 
@@ -61,16 +69,18 @@ class Bootstrap extends Bootstrapper
     private function prepareListing(): void
     {
         $productFilter = Shop::getProductFilter();
-        if ($productFilter->isExtendedJTLSearch()) {
-            // JTL Search delivers the result list itself (only the current page, filtered on its
-            // server) – core filter SQL never reaches it, so sliders/buttons would not filter there.
-            return;
-        }
         $l10n          = $this->getPlugin()->getLocalization();
         $labels        = [
             'from' => $l10n->getTranslation('mrf_from') ?? 'Von',
             'to'   => $l10n->getTranslation('mrf_to') ?? 'Bis',
         ];
+        if ($productFilter->isExtendedJTLSearch()) {
+            // JTL Search delivers the result list itself (only the current page, filtered on its
+            // server) – core filter SQL never reaches it, so our sliders/buttons would not filter there.
+            // Instead its own filter groups are shown in the NOVA characteristic filter (setting mrf_jtlsearch).
+            $this->prepareJtlSearch($productFilter, $labels);
+            return;
+        }
         $restriction   = new GroupRestriction($this->getGroupRepository(), $this->getDB());
         // null = no filter group assigned to this category → core behaviour (Wawi attribute or all)
         $allowed       = $restriction->apply($productFilter);
@@ -98,6 +108,32 @@ class Bootstrap extends Bootstrapper
         }
         $this->prepareButtons($productFilter);
         $this->assignAssets(\count($sliders) > 0);
+    }
+
+    /**
+     * Search page with JTL Search. Setting off (or nothing to show): JTL's box "Filter (JTL Search)" stays as is.
+     *
+     * @param array{from: string, to: string} $labels
+     */
+    private function prepareJtlSearch(ProductFilter $productFilter, array $labels): void
+    {
+        if (!(Settings::get()?->jtlSearchFilters ?? false)) {
+            return;
+        }
+        $this->jtlSearchFilters = new JtlSearchFilters($this->getPlugin()->getPaths()->getFrontendPath());
+        $data                   = $this->jtlSearchFilters->prepare($productFilter, Shop::Smarty(), $labels);
+        if ($data === null) {
+            $this->jtlSearchFilters = null;
+            return;
+        }
+        $smarty = Shop::Smarty();
+        if (\count($data['sliders']) > 0) {
+            $smarty->assign('mrfSliders', $data['sliders']);
+        }
+        if (\count($data['buttons']) > 0) {
+            $smarty->assign('mrfButtons', $data['buttons']);
+        }
+        $this->assignAssets(\count($data['sliders']) > 0);
     }
 
     /**
