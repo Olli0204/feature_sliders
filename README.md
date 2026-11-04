@@ -100,6 +100,9 @@ halbfett und zentriert, eingerückt wie der Preisregler, ausgewählte Werte in d
   (wie JTL Search / Checkliste / Boxen; Regler-Gruppen bleiben Regler), Einheit und Schrittweite für Regler (JTL
   Search akzeptiert beliebige Zwischenwerte, z. B. `154_154`), aufgeklappt, Reihenfolge per Ziehen. Regler gibt es
   nur für Zahlenfelder von JTL Search (`attr_num_…`, Merkmalwerte ohne Einheit in der Wawi, z. B. Brettlänge „154“).
+  Seit 1.7.1 Titel je Shop-Sprache (`title` = Standardsprache, `titles` = JSON der übrigen Sprachen; leer = Titel,
+  den JTL Search in dieser Sprache liefert) und Anzeige, in welchen Sprachen JTL Search die Gruppe geliefert hat
+  (`langs`) – im Englischen liefert JTL Search teils eigene Gruppen (z. B. `attr_num_length`, `attr_num_size`).
 
 ### Erkannte Schreibweisen
 

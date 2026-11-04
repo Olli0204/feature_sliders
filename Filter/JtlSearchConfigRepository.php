@@ -11,8 +11,9 @@ use JTL\DB\DbInterface;
  * Settings per JTL Search filter group (backend tab "JTL Search"). Groups are recorded by the frontend as soon
  * as JTL Search delivers them (record()), the admin then sets title, display, unit, step, order, visibility.
  *
- * Row: name, jtlTitle, jtlType (1 list, 2 slider, 3 colour, 4 tinybox), active, title, display
- * (auto|list|buttons), unit, step (0 = JTL Search), expanded, sort, lastSeen (Y-m-d|null).
+ * Row: name, jtlTitle, jtlType (1 list, 2 slider, 3 colour, 4 tinybox), langs (ISO codes JTL Search delivered the
+ * group in), active, title (default language), titles (ISO => title, other languages), display (auto|list|buttons),
+ * unit, step (0 = JTL Search), expanded, sort, lastSeen (Y-m-d|null).
  */
 final class JtlSearchConfigRepository
 {
@@ -68,14 +69,32 @@ final class JtlSearchConfigRepository
     public static function normalize(array $row): array
     {
         $display = (string)($row['display'] ?? self::DISPLAY_AUTO);
+        $titles  = $row['titles'] ?? [];
+        if (\is_string($titles)) {
+            $titles = \json_decode($titles, true);
+        }
+        $cleanTitles = [];
+        foreach (\is_array($titles) ? $titles : [] as $iso => $text) {
+            $text = \mb_substr(\trim(\strip_tags((string)$text)), 0, 100);
+            if (\preg_match('/^[a-z]{2,3}$/', (string)$iso) && $text !== '') {
+                $cleanTitles[(string)$iso] = $text;
+            }
+        }
+        $langs = $row['langs'] ?? '';
+        $langs = \is_array($langs) ? $langs : \explode(',', (string)$langs);
         $step    = (float)\str_replace(',', '.', (string)($row['step'] ?? 0));
 
         return [
             'name'     => (string)($row['jtl_name'] ?? $row['name'] ?? ''),
             'jtlTitle' => (string)($row['jtl_title'] ?? ''),
             'jtlType'  => (int)($row['jtl_type'] ?? 1),
+            'langs'    => \array_values(\array_filter(
+                $langs,
+                static fn($iso): bool => \is_string($iso) && \preg_match('/^[a-z]{2,3}$/', $iso) === 1
+            )),
             'active'   => (bool)(int)($row['active'] ?? 1),
             'title'    => \mb_substr(\trim(\strip_tags((string)($row['title'] ?? ''))), 0, 100),
+            'titles'   => $cleanTitles,
             'display'  => \in_array($display, self::DISPLAYS, true) ? $display : self::DISPLAY_AUTO,
             'unit'     => \mb_substr(\trim(\strip_tags((string)($row['unit'] ?? ''))), 0, 20),
             'step'     => $step > 0 && $step < 1000000 ? \round($step, 3) : 0.0,
@@ -90,9 +109,11 @@ final class JtlSearchConfigRepository
      * or once a day (last seen) – a normal search request does not touch the database.
      *
      * @param array<string, array{title: string, type: int}> $groups field name => JTL title/type
+     * @param string                                         $language ISO code of the current shop language
      */
-    public function record(array $groups): void
+    public function record(array $groups, string $language = ''): void
     {
+        $language = \preg_match('/^[a-z]{2,3}$/', $language) ? $language : '';
         if (\count($groups) === 0) {
             return;
         }
@@ -105,12 +126,13 @@ final class JtlSearchConfigRepository
             if ($existing === null) {
                 try {
                     $this->db->queryPrepared(
-                        'INSERT IGNORE INTO ' . self::TABLE . ' (jtl_name, jtl_title, jtl_type, sort, last_seen)
-                            VALUES (:name, :title, :type, :sort, :seen)',
+                        'INSERT IGNORE INTO ' . self::TABLE . ' (jtl_name, jtl_title, jtl_type, langs, sort, last_seen)
+                            VALUES (:name, :title, :type, :langs, :sort, :seen)',
                         [
                             'name'  => $name,
                             'title' => \mb_substr($group['title'], 0, 255),
                             'type'  => $group['type'],
+                            'langs' => $language,
                             'sort'  => ++$maxSort,
                             'seen'  => $today,
                         ]
@@ -120,17 +142,28 @@ final class JtlSearchConfigRepository
                 }
                 $changed = true;
             } elseif (
-                $existing['jtlTitle'] !== $group['title']
+                // JTL's title is remembered in the default language only (other languages: own title fields)
+                ($existing['jtlTitle'] !== $group['title'] && $this->isDefaultLanguage($language))
                 || $existing['jtlType'] !== $group['type']
                 || $existing['lastSeen'] !== $today
+                || ($language !== '' && !\in_array($language, $existing['langs'], true))
             ) {
+                $langs = $existing['langs'];
+                if ($language !== '' && !\in_array($language, $langs, true)) {
+                    $langs[] = $language;
+                }
                 $this->db->queryPrepared(
-                    'UPDATE ' . self::TABLE . ' SET jtl_title = :title, jtl_type = :type, last_seen = :seen
-                        WHERE jtl_name = :name',
+                    'UPDATE ' . self::TABLE . ' SET jtl_title = :title, jtl_type = :type, langs = :langs,
+                        last_seen = :seen WHERE jtl_name = :name',
                     [
                         'name'  => $name,
-                        'title' => \mb_substr($group['title'], 0, 255),
+                        'title' => \mb_substr(
+                            $this->isDefaultLanguage($language) ? $group['title'] : $existing['jtlTitle'],
+                            0,
+                            255
+                        ),
                         'type'  => $group['type'],
+                        'langs' => \implode(',', $langs),
                         'seen'  => $today,
                     ]
                 );
@@ -151,12 +184,13 @@ final class JtlSearchConfigRepository
     {
         foreach (\array_values($rows) as $i => $row) {
             $this->db->queryPrepared(
-                'UPDATE ' . self::TABLE . ' SET active = :active, title = :title, display = :display, unit = :unit,
-                    step = :step, expanded = :expanded, sort = :sort WHERE jtl_name = :name',
+                'UPDATE ' . self::TABLE . ' SET active = :active, title = :title, titles = :titles, display = :display,
+                    unit = :unit, step = :step, expanded = :expanded, sort = :sort WHERE jtl_name = :name',
                 [
                     'name'     => $row['name'],
                     'active'   => $row['active'] ? 1 : 0,
                     'title'    => $row['title'],
+                    'titles'   => \count($row['titles']) > 0 ? \json_encode($row['titles'], \JSON_UNESCAPED_UNICODE) : null,
                     'display'  => $row['display'],
                     'unit'     => $row['unit'],
                     'step'     => $row['step'],
@@ -166,6 +200,36 @@ final class JtlSearchConfigRepository
             );
         }
         $this->flush();
+    }
+
+    /**
+     * Title for the shop language: own title of that language, for the default language the main title field,
+     * otherwise JTL Search's own (language-specific) title.
+     *
+     * @param array<string, mixed> $config
+     */
+    public static function titleFor(array $config, string $language, bool $isDefault, string $jtlTitle): string
+    {
+        if (($config['titles'][$language] ?? '') !== '') {
+            return $config['titles'][$language];
+        }
+        if ($isDefault && $config['title'] !== '') {
+            return $config['title'];
+        }
+
+        return $jtlTitle;
+    }
+
+    private ?string $defaultLanguage = null;
+
+    public function setDefaultLanguage(string $iso): void
+    {
+        $this->defaultLanguage = $iso;
+    }
+
+    private function isDefaultLanguage(string $language): bool
+    {
+        return $language === '' || $this->defaultLanguage === null || $language === $this->defaultLanguage;
     }
 
     public function remove(string $name): void
