@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\feature_sliders\Admin;
 
+use JTL\DB\DbInterface;
 use JTL\Helpers\Form;
 use JTL\Helpers\Request;
 use JTL\Plugin\PluginInterface;
@@ -34,6 +35,7 @@ final class JtlSearchAdmin
     public function __construct(
         private readonly PluginInterface $plugin,
         private readonly JtlSearchConfigRepository $repository,
+        private readonly ?DbInterface $db = null,
         ?\Closure $tokenValidator = null
     ) {
         $this->tokenValidator = $tokenValidator ?? static fn(): bool => Form::validateToken();
@@ -41,12 +43,17 @@ final class JtlSearchAdmin
 
     public function render(int $menuID, JTLSmarty $smarty): string
     {
-        $message = $this->handlePost();
+        $languages = $this->loadLanguages();
+        $message   = $this->handlePost($languages);
         $rows    = \array_values($this->repository->getAll());
         $today   = new \DateTimeImmutable('today');
         foreach ($rows as &$row) {
             $row['isSlider'] = $row['jtlType'] === JtlSearchConfigRepository::TYPE_SLIDER;
             $row['typeLabel'] = self::TYPE_LABELS[$row['jtlType']] ?? (string)$row['jtlType'];
+            $row['langLabels'] = \array_values(\array_filter(
+                $languages,
+                static fn(array $language): bool => \in_array($language['iso'], $row['langs'], true)
+            ));
             $row['daysAgo']  = $row['lastSeen'] === null
                 ? null
                 : (int)$today->diff(new \DateTimeImmutable($row['lastSeen']))->days;
@@ -59,13 +66,51 @@ final class JtlSearchAdmin
             ->assign('mrfMessage', $message)
             ->assign('mrfJtlEnabled', $settings->active && $settings->jtlSearchFilters)
             ->assign('mrfJtlDisplayLabels', self::DISPLAY_LABELS)
+            ->assign('mrfJtlLanguages', $languages)
             ->fetch($this->plugin->getPaths()->getAdminPath() . 'templates/jtlsearch.tpl');
     }
 
     /**
+     * Shop languages, default language first: [['iso' => 'ger', 'label' => 'DE', 'name' => 'Deutsch', 'default' => true]].
+     *
+     * @return array<int, array{iso: string, label: string, name: string, default: bool}>
+     */
+    private function loadLanguages(): array
+    {
+        $result = [];
+        try {
+            $rows = $this->db?->getObjects(
+                "SELECT cISO, cNameDeutsch, cShopStandard FROM tsprache ORDER BY cShopStandard = 'Y' DESC, kSprache"
+            ) ?? [];
+        } catch (\Throwable) {
+            $rows = [];
+        }
+        foreach ($rows as $row) {
+            $iso = (string)$row->cISO;
+            if (!\preg_match('/^[a-z]{2,3}$/', $iso)) {
+                continue;
+            }
+            $result[] = [
+                'iso'     => $iso,
+                'label'   => \strtoupper(self::SHORT[$iso] ?? $iso),
+                'name'    => (string)$row->cNameDeutsch,
+                'default' => (string)$row->cShopStandard === 'Y',
+            ];
+        }
+        if (\count($result) === 0) {
+            $result[] = ['iso' => 'ger', 'label' => 'DE', 'name' => 'Deutsch', 'default' => true];
+        }
+
+        return $result;
+    }
+
+    private const SHORT = ['ger' => 'de', 'eng' => 'en', 'fre' => 'fr', 'ita' => 'it', 'spa' => 'es', 'dut' => 'nl'];
+
+    /**
+     * @param array<int, array{iso: string, label: string, name: string, default: bool}> $languages
      * @return array{type: string, text: string}|null
      */
-    private function handlePost(): ?array
+    private function handlePost(array $languages): ?array
     {
         // JTL renders every plugin tab on each request – only react to this tab's own actions
         $action = (string)Request::postVar('mrf_action', '');
@@ -93,10 +138,21 @@ final class JtlSearchAdmin
                 continue;
             }
             // unchecked checkboxes are missing from the POST data
+            $titles = [];
+            $title  = '';
+            foreach ($languages as $language) {
+                $text = (string)($data['titles'][$language['iso']] ?? '');
+                if ($language['default']) {
+                    $title = $text;
+                } else {
+                    $titles[$language['iso']] = $text;
+                }
+            }
             $rows[] = JtlSearchConfigRepository::normalize([
                 'name'     => $name,
                 'active'   => isset($data['active']) ? 1 : 0,
-                'title'    => $data['title'] ?? '',
+                'title'    => $title,
+                'titles'   => $titles,
                 'display'  => $data['display'] ?? JtlSearchConfigRepository::DISPLAY_AUTO,
                 'unit'     => $data['unit'] ?? '',
                 'step'     => $data['step'] ?? 0,

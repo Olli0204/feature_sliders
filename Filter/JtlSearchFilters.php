@@ -49,7 +49,10 @@ final class JtlSearchFilters
     public function __construct(
         private readonly string $frontendPath,
         private readonly array $configs = [],
-        private readonly ?JtlSearchConfigRepository $repository = null
+        private readonly ?JtlSearchConfigRepository $repository = null,
+        /** ISO code of the shop language (ger, eng) – titles per language */
+        private readonly string $language = '',
+        private readonly bool $isDefaultLanguage = true
     ) {
     }
 
@@ -98,8 +101,8 @@ final class JtlSearchFilters
             if ($config !== null && !$config['active']) {
                 continue;
             }
-            if ($config !== null && $config['title'] !== '') {
-                $title = $config['title'];
+            if ($config !== null) {
+                $title = JtlSearchConfigRepository::titleFor($config, $this->language, $this->isDefaultLanguage, $title);
             }
             $option = $this->createGroup($id, $title);
             if ($type === self::TYPE_SLIDER) {
@@ -165,7 +168,7 @@ final class JtlSearchFilters
             // configured order (backend tab "JTL Search"); groups not recorded yet keep JTL's order at the end
             $order[] = $config !== null ? $config['sort'] : 1000000 + $index;
         }
-        $this->repository?->record($seen);
+        $this->repository?->record($seen, $this->language);
         if (\count($options) === 0) {
             return null;
         }

@@ -10,6 +10,7 @@
     .mrf-jtl .mrf-empty { padding: 2.5rem 1rem; text-align: center; }
     .mrf-jtl .mrf-empty-icon { display: block; margin: 0 auto .75rem; font-size: 2rem; line-height: 1; opacity: .35; }
     .mrf-jtl td { vertical-align: middle !important; }
+    .mrf-jtl .mrf-lang { min-width: 2.25rem; justify-content: center; font-size: .75rem; }
 </style>
 
 <div class="mrf-jtl">
@@ -31,6 +32,7 @@
             <p class="text-muted mb-3">
                 Welche Filter JTL Search liefert, wird im JTL-Kundencenter unter JTL-Search → Verwaltung → Filtermöglichkeiten festgelegt.
                 Jede Gruppe, die JTL Search im Shop liefert, erscheint hier automatisch. Leere Felder übernehmen die Angaben von JTL Search.
+                Titel gibt es je Sprache: leere Felder anderer Sprachen zeigen den Titel, den JTL Search in dieser Sprache liefert.
                 Die Reihenfolge lässt sich per Ziehen ändern. Regler kommen nur für Zahlenwerte von JTL Search, Schrittweite und Einheit
                 gelten nur für Regler.
             </p>
@@ -74,13 +76,33 @@
                                         <td>
                                             <strong>{$row.jtlTitle|escape:'html'}</strong> <span class="mrf-chip">{$row.typeLabel}</span><br>
                                             <span class="mrf-field">{$row.name|escape:'html'}</span>
+                                            {if $mrfJtlLanguages|count > 1 && $row.langLabels|count > 0}
+                                                <br>{foreach $row.langLabels as $language}<span class="mrf-chip" title="von JTL Search in {$language.name|escape:'html'} geliefert">{$language.label|escape:'html'}</span> {/foreach}
+                                                {if $row.langLabels|count === 1}<span class="small text-muted">nur diese Sprache</span>{/if}
+                                            {/if}
                                             {if $row.daysAgo === null || $row.daysAgo > 14}
                                                 <br><span class="text-warning small">seit {if $row.daysAgo === null}längerem{else}{$row.daysAgo} Tagen{/if} nicht mehr von JTL Search geliefert</span>
                                             {/if}
                                         </td>
                                         <td class="mrf-col-title">
-                                            <input type="text" class="form-control" name="{$field}[title]" maxlength="100"
-                                                   value="{$row.title|escape:'html'}" placeholder="{$row.jtlTitle|escape:'html'}">
+                                            {foreach $mrfJtlLanguages as $language}
+                                                {if $language.default}
+                                                    {assign var=titleValue value=$row.title}
+                                                {else}
+                                                    {assign var=titleValue value=$row.titles[$language.iso]|default:''}
+                                                {/if}
+                                                <div class="input-group input-group-sm{if !$language@last} mb-1{/if}">
+                                                    {if $mrfJtlLanguages|count > 1}
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text mrf-lang" title="{$language.name|escape:'html'}">{$language.label|escape:'html'}</span>
+                                                        </div>
+                                                    {/if}
+                                                    <input type="text" class="form-control" name="{$field}[titles][{$language.iso}]" maxlength="100"
+                                                           value="{$titleValue|escape:'html'}"
+                                                           placeholder="{if $language.default}{$row.jtlTitle|escape:'html'}{else}wie JTL Search{/if}"
+                                                           aria-label="Titel {$language.name|escape:'html'}">
+                                                </div>
+                                            {/foreach}
                                         </td>
                                         <td>
                                             {if $row.isSlider}
