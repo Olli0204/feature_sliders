@@ -1,4 +1,4 @@
-# Merkmal-Bereichsfilter (JTL-Shop 5.7.0 – 5.8.3)
+# Merkmal-Bereichsfilter (JTL-Shop 5.7.0 – 5.8.4)
 
 Legt im Backend **je Merkmal** fest, wie es im Merkmalfilter der Artikelliste dargestellt wird:
 
