@@ -169,6 +169,9 @@
         </div>
     </div>
 
+    {* ---------- Reihenfolge der Filter (alle Merkmale) ---------- *}
+    {include file=$mrfOrderTpl}
+
     {* ---------- Bearbeiten ---------- *}
     {foreach $mrfRows as $row}
         {assign var=cfg value=$row.config}

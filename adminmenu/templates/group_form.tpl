@@ -26,7 +26,7 @@
 
         <div class="row">
             <div class="col-lg-6">
-                <div class="mrf-section-label">Merkmale im Filter <span class="mrf-hint">– Reihenfolge per Ziehen</span></div>
+                <div class="mrf-section-label">Merkmale im Filter <span class="mrf-hint">– Reihenfolge per Ziehen (nur ohne eigene „Reihenfolge der Filter“ im Reiter Merkmale)</span></div>
                 <ol class="mrf-sortable mrf-selected-list" data-empty="Noch keine Merkmale – rechts hinzufügen.">
                     {foreach $mrfSelectedChars as $cid}
                         {if isset($mrfCharacteristics[$cid])}

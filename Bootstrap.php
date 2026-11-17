@@ -19,6 +19,7 @@ use Plugin\feature_sliders\Filter\GroupRepository;
 use Plugin\feature_sliders\Filter\GroupRestriction;
 use Plugin\feature_sliders\Filter\JtlSearchConfigRepository;
 use Plugin\feature_sliders\Filter\JtlSearchFilters;
+use Plugin\feature_sliders\Filter\OrderRepository;
 use Plugin\feature_sliders\Filter\RangeFilter;
 use Plugin\feature_sliders\Filter\Settings;
 
@@ -79,6 +80,11 @@ class Bootstrap extends Bootstrapper
         }
     }
 
+    private function getOrderRepository(): OrderRepository
+    {
+        return new OrderRepository($this->getDB(), $this->getCache(), $this->getPlugin()->getCache()->getGroup());
+    }
+
     private function getGroupRepository(): GroupRepository
     {
         return new GroupRepository($this->getDB(), $this->getCache(), $this->getPlugin()->getCache()->getGroup());
@@ -127,6 +133,8 @@ class Bootstrap extends Bootstrapper
             // slider placeholders are appended – bring everything into group order
             $restriction->sort($productFilter, $allowed);
         }
+        // standard order (tab "Merkmale" → "Reihenfolge der Filter") wins over group and Wawi order
+        OrderRepository::apply($productFilter, $this->getOrderRepository()->getOrder());
         if (\count($sliders) > 0) {
             Shop::Smarty()->assign('mrfSliders', $sliders);
         }
@@ -309,7 +317,13 @@ class Bootstrap extends Bootstrapper
                 ->render($menuID, $smarty);
         }
 
-        return (new CharacteristicsAdmin($this->getPlugin(), $this->getDB(), $this->getRepository()))
+        return (new CharacteristicsAdmin(
+            $this->getPlugin(),
+            $this->getDB(),
+            $this->getRepository(),
+            null,
+            $this->getOrderRepository()
+        ))
             ->render($menuID, $smarty);
     }
 }

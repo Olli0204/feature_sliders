@@ -35,6 +35,16 @@ Schrittweite, Treffer-Logik und „Aufgeklappt“ als „Bereich auf Bereich“.
 
 Tab **Einstellungen**: „Filter aktiv“ (alle Regler und Boxen an/aus).
 
+## Reihenfolge der Filter
+
+Seit 1.8.0 im Reiter „Merkmale“ (Bereich „Reihenfolge der Filter“, Tabelle `feature_sliders_order`): eine
+Standard-Reihenfolge aller Merkmalfilter per Ziehen, Pfeilen oder „ganz nach oben“, mit Suche. Sie gilt auf allen
+Artikellisten – auch in Kategorien mit Filtergruppe (die Gruppe bestimmt dann nur, welche Merkmale erscheinen).
+Merkmale ohne Eintrag folgen in der bisherigen Reihenfolge (Wawi-Sortierung bzw. Gruppe). Ohne gespeicherte
+Reihenfolge ändert sich nichts. Umsetzung: `OrderRepository::apply()` am Ende von `prepareListing()` (stabile
+Sortierung, schreibt in SearchResults und Merkmal-Collection = Seitenleiste und Filter-Dialog). Der Preisfilter ist
+eine eigene Box (Boxenverwaltung). Die Suchseite mit JTL Search hat ihre eigene Reihenfolge (Reiter „JTL Search“).
+
 ## Filtergruppen
 
 Tab **Filtergruppen**: Eine Gruppe (z. B. „Snowboards“: Länge, Körpergewicht, Fahrlevel …) legt fest, welche Merkmale in
