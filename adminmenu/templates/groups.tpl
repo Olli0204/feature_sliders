@@ -44,9 +44,10 @@
         </div>
         <div class="card-body">
             <p class="text-muted mb-3">
-                Eine Filtergruppe legt fest, welche Merkmale in einer Kategorie als Filter erscheinen – in genau der Reihenfolge der Gruppe.
-                Sie gilt nur für die gewählten Kategorien, nicht für deren Unterkategorien. Hat eine Kategorie mehrere Gruppen, kommen
-                die Merkmale in der Reihenfolge der Gruppen hier in der Liste. Kategorien ohne Gruppe verhalten sich wie bisher
+                Eine Filtergruppe legt fest, welche Merkmale in einer Kategorie als Filter erscheinen.
+                Sie gilt nur für die gewählten Kategorien, nicht für deren Unterkategorien. Die <strong>Reihenfolge</strong> im Shop kommt aus
+                „Reihenfolge der Filter“ im Reiter <strong>Merkmale</strong> – nur solange dort keine eigene Reihenfolge gespeichert ist,
+                gilt die Reihenfolge der Gruppe. Kategorien ohne Gruppe verhalten sich wie bisher
                 (Wawi-Funktionsattribut „merkmalfilter“ oder alle Merkmale), ebenso Suche und Herstellerseiten.
             </p>
             {if $mrfGroups|count === 0}

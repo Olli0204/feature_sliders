@@ -12,6 +12,7 @@ use JTL\Smarty\JTLSmarty;
 use Plugin\feature_sliders\Bootstrap;
 use Plugin\feature_sliders\Filter\CharacteristicConfig;
 use Plugin\feature_sliders\Filter\ConfigRepository;
+use Plugin\feature_sliders\Filter\OrderRepository;
 use Plugin\feature_sliders\Filter\RangeFilter;
 use Plugin\feature_sliders\Filter\RangeParser;
 use Plugin\feature_sliders\Filter\Settings;
@@ -29,7 +30,7 @@ final class CharacteristicsAdmin
     ];
 
     /** POST actions of this tab (mrf_action) */
-    public const ACTIONS = ['char_save', 'char_toggle', 'char_remove'];
+    public const ACTIONS = ['char_save', 'char_toggle', 'char_remove', 'order_save', 'order_reset'];
 
     public const MODE_LABELS = [
         RangeParser::MODE_OVERLAP  => 'Bereiche überschneiden sich',
@@ -44,7 +45,8 @@ final class CharacteristicsAdmin
         private readonly PluginInterface $plugin,
         private readonly DbInterface $db,
         private readonly ConfigRepository $repository,
-        ?\Closure $tokenValidator = null
+        ?\Closure $tokenValidator = null,
+        private readonly ?OrderRepository $order = null
     ) {
         $this->tokenValidator = $tokenValidator ?? static fn(): bool => Form::validateToken();
     }
@@ -54,6 +56,7 @@ final class CharacteristicsAdmin
         $characteristics = $this->loadCharacteristics();
         [$message, $openEdit] = $this->handlePost($characteristics);
         $configs    = $this->repository->getAll();
+        $orderIDs   = $this->order?->getOrder() ?? [];
         $configured = [];
         $available  = [];
         foreach ($characteristics as $id => $characteristic) {
@@ -72,6 +75,9 @@ final class CharacteristicsAdmin
             ->assign('mrfActive', Settings::fromPlugin($this->plugin)->active)
             ->assign('mrfDisplayLabels', self::DISPLAY_LABELS)
             ->assign('mrfModeLabels', self::MODE_LABELS)
+            ->assign('mrfOrder', self::orderList($characteristics, $orderIDs, $configs))
+            ->assign('mrfOrderCustom', \count($orderIDs) > 0)
+            ->assign('mrfOrderTpl', $this->plugin->getPaths()->getAdminPath() . 'templates/order.tpl')
             ->assign('mrfTilesTpl', $this->plugin->getPaths()->getAdminPath() . 'templates/display_tiles.tpl')
             ->fetch($this->plugin->getPaths()->getAdminPath() . 'templates/characteristics.tpl');
     }
@@ -90,6 +96,23 @@ final class CharacteristicsAdmin
         }
         if (!($this->tokenValidator)()) {
             return [['type' => 'danger', 'text' => 'Ungültiges Sicherheits-Token. Bitte die Seite neu laden und erneut versuchen.'], 0];
+        }
+        if ($action === 'order_save' || $action === 'order_reset') {
+            if ($this->order === null) {
+                return [null, 0];
+            }
+            if ($action === 'order_reset') {
+                $this->order->reset();
+
+                return [['type' => 'success', 'text' => 'Reihenfolge zurückgesetzt – die Filter erscheinen wieder in der Wawi-Reihenfolge (bzw. der Reihenfolge der Filtergruppe).'], 0];
+            }
+            $ids = \array_values(\array_filter(
+                \array_map('\intval', (array)Request::postVar('mrf_order', [])),
+                static fn(int $cid): bool => isset($characteristics[$cid])
+            ));
+            $this->order->save($ids);
+
+            return [['type' => 'success', 'text' => 'Reihenfolge der Filter gespeichert. Auf bereits zwischengespeicherten Seiten wirkt sie erst nach dem Leeren des LiteSpeed-Caches.'], 0];
         }
         $id   = (int)Request::postInt('mrf_id', 0);
         $name = (string)($characteristics[$id]['name'] ?? '');
@@ -132,6 +155,44 @@ final class CharacteristicsAdmin
         }
 
         return [null, 0];
+    }
+
+    /**
+     * All characteristics for the section "Reihenfolge der Filter": saved order first, the rest in Wawi order.
+     *
+     * @param array<int, array<string, mixed>>   $characteristics Wawi order
+     * @param int[]                              $orderIDs
+     * @param array<int, CharacteristicConfig>   $configs
+     * @return array<int, array{id: int, name: string, samples: string[], display: string}>
+     */
+    public static function orderList(array $characteristics, array $orderIDs, array $configs): array
+    {
+        $sorted = OrderRepository::sortOptions(
+            \array_map(static fn(array $c): object => new class ($c) {
+                public function __construct(public array $c)
+                {
+                }
+
+                public function getValue(): int
+                {
+                    return (int)$this->c['id'];
+                }
+            }, \array_values($characteristics)),
+            $orderIDs
+        );
+        $result = [];
+        foreach ($sorted as $item) {
+            $c      = $item->c;
+            $config = $configs[$c['id']] ?? null;
+            $result[] = [
+                'id'      => (int)$c['id'],
+                'name'    => (string)$c['name'],
+                'samples' => \array_slice($c['samples'] ?? [], 0, 3),
+                'display' => $config === null || !$config->active ? '' : ($config->isButtons() ? 'Boxen' : 'Regler'),
+            ];
+        }
+
+        return $result;
     }
 
     /**
