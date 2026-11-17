@@ -45,6 +45,17 @@ Reihenfolge ändert sich nichts. Umsetzung: `OrderRepository::apply()` am Ende v
 Sortierung, schreibt in SearchResults und Merkmal-Collection = Seitenleiste und Filter-Dialog). Der Preisfilter ist
 eine eigene Box (Boxenverwaltung). Die Suchseite mit JTL Search hat ihre eigene Reihenfolge (Reiter „JTL Search“).
 
+## Nicht passende Merkmale ausblenden
+
+Seit 1.8.1 (`Filter/CharacteristicNarrowing.php`, in `prepareListing()` direkt nach der Filtergruppe): Der Core
+berechnet den Merkmalfilter ohne die gewählten Merkmalwerte (`Characteristic::getState()` →
+`getCurrentStateData(Characteristic::class)`), nach „Warengruppe: Jacken“ stand deshalb noch „Bindungsgröße“ da.
+Früher hat das das Fremd-Plugin knm_feature_filter erledigt (inzwischen deinstalliert). Sobald ein Merkmalwert gewählt
+ist, behalten alle *anderen* Merkmale nur Werte, die in der aktuellen Trefferliste vorkommen (mit echter Anzahl);
+Merkmale ohne Werte verschwinden. Merkmale mit gewähltem Wert bleiben vollständig (umschalten/Mehrfachauswahl).
+Eine Abfrage über dieselbe Basis-Abfrage wie der Core (Typ „filter“, eigener Alias `fsam`, weil aktive Merkmalfilter
+schon `tartikelmerkmal` joinen), gecacht in den Filter-Cache-Gruppen. Bei einem Fehler wird nichts ausgeblendet.
+
 ## Filtergruppen
 
 Tab **Filtergruppen**: Eine Gruppe (z. B. „Snowboards“: Länge, Körpergewicht, Fahrlevel …) legt fest, welche Merkmale in

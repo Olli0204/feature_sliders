@@ -14,6 +14,7 @@ use JTL\Smarty\JTLSmarty;
 use Plugin\feature_sliders\Admin\CharacteristicsAdmin;
 use Plugin\feature_sliders\Admin\GroupsAdmin;
 use Plugin\feature_sliders\Admin\JtlSearchAdmin;
+use Plugin\feature_sliders\Filter\CharacteristicNarrowing;
 use Plugin\feature_sliders\Filter\ConfigRepository;
 use Plugin\feature_sliders\Filter\GroupRepository;
 use Plugin\feature_sliders\Filter\GroupRestriction;
@@ -114,6 +115,8 @@ class Bootstrap extends Bootstrapper
         $restriction   = new GroupRestriction($this->getGroupRepository(), $this->getDB());
         // null = no filter group assigned to this category → core behaviour (Wawi attribute or all)
         $allowed       = $restriction->apply($productFilter);
+        // hide characteristics/values without products once a characteristic value is selected (core keeps them all)
+        (new CharacteristicNarrowing($this->getDB(), $this->getCache()))->apply($productFilter);
         $sliders       = [];
         foreach ($productFilter->getAvailableFilters() as $filter) {
             if (!$filter instanceof RangeFilter) {
